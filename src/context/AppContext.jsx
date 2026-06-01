@@ -360,7 +360,15 @@ export function AppProvider({ children }) {
     if (order) {
       pendingClosedOrderIdsRef.current.add(orderId);
       const finalPaymentMethod = paymentMethod || order.paymentMethod || 'Cash';
-      const paidOrder = { ...order, status: 'Paid', closedAt: formatIstTime(), paymentMethod: finalPaymentMethod };
+      const isPayLater = finalPaymentMethod === 'Pay Later';
+      const paidOrder = {
+        ...order,
+        status: 'Paid',
+        closedAt: formatIstTime(),
+        paymentMethod: finalPaymentMethod,
+        paymentStatus: isPayLater ? 'Pending' : 'Paid',
+        paidAt: isPayLater ? null : new Date().toISOString(),
+      };
       setOrderHistory(prev => [paidOrder, ...prev]);
       setActiveOrders(prev => prev.filter(o => o.id !== orderId));
       setTables(prev => prev.map(t => t.order?.id === orderId ? { ...t, status: 'available', order: null } : t));
@@ -387,6 +395,28 @@ export function AppProvider({ children }) {
         throw e;
       }
     }
+  };
+
+  const settlePayLaterOrder = async (orderId, paymentMethod) => {
+    const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        correction: true,
+        paymentStatus: 'Paid',
+        paymentMethod,
+        paidAt: new Date().toISOString(),
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.details || err.error || `Failed to settle payment (${res.status})`);
+    }
+
+    const updatedOrder = await res.json();
+    setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
+    return updatedOrder;
   };
 
   const freeTable = (tableId) => {
@@ -588,7 +618,7 @@ export function AppProvider({ children }) {
       appMode, setAppMode,
       tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders,
       refreshData,
-      placeOrder, updateOrder, correctHistoricalOrder, updateOrderItemQuantity, markOrderReady, closeOrder, freeTable, updateTableStatus,
+      placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, updateOrderItemQuantity, markOrderReady, closeOrder, freeTable, updateTableStatus,
       addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
       addStoreItem, updateStoreItemStock, checkoutStoreOrder,

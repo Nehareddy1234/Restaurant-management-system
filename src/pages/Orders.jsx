@@ -101,6 +101,9 @@ export default function Orders() {
                             <button className="btn btn-primary" disabled={closingOrderId === order.id} onClick={() => handleCloseOrder(order.id, 'Card')}>
                               Card
                             </button>
+                            <button className="btn btn-outline" disabled={closingOrderId === order.id} onClick={() => handleCloseOrder(order.id, 'Pay Later')}>
+                              Pay Later
+                            </button>
                             <button className="btn btn-outline" disabled={closingOrderId === order.id} onClick={() => setDialogOrderId(null)}>
                               Cancel
                             </button>

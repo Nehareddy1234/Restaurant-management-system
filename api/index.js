@@ -107,9 +107,10 @@ function mapOrder(order) {
   const timeStr = d.toLocaleTimeString('en-IN', timeOptions);
   const time = `${dateStr}, ${timeStr.toUpperCase()}`;
 
-  const closedDate = order.paidAt ? new Date(order.paidAt) : d;
-  const closedAt = closedDate.toLocaleTimeString('en-IN', timeOptions).toUpperCase();
-  const date = closedDate.toLocaleDateString('en-IN', dateOptions);
+  const paidDate = order.paidAt ? new Date(order.paidAt) : null;
+  const closedAt = paidDate ? paidDate.toLocaleTimeString('en-IN', timeOptions).toUpperCase() : timeStr.toUpperCase();
+  const paidDateLabel = paidDate ? paidDate.toLocaleDateString('en-IN', dateOptions) : null;
+  const paidTimeLabel = paidDate ? paidDate.toLocaleTimeString('en-IN', timeOptions).toUpperCase() : null;
 
   return {
     ...order,
@@ -117,7 +118,10 @@ function mapOrder(order) {
     itemList,
     table: tableStr,
     time,
-    date,
+    date: dateStr,
+    orderedAt: time,
+    paidDate: paidDateLabel,
+    paidTime: paidTimeLabel,
     closedAt,
   };
 }
@@ -170,6 +174,10 @@ function parseOrderCorrection(body) {
 
   if (body.paymentMethod !== undefined) {
     data.paymentMethod = normalizePaymentMethod(body.paymentMethod);
+  }
+
+  if (body.paymentStatus !== undefined) {
+    data.paymentStatus = body.paymentStatus === 'Pending' ? 'Pending' : 'Paid';
   }
 
   if (body.customerName !== undefined) {
@@ -838,12 +846,14 @@ export default async function handler(req, res) {
         // Simple status-only update (e.g. Preparing → Ready → Paid)
         if (body.status && !body.items) {
           const updated = await prisma.$transaction(async (tx) => {
+            const isPayLater = body.status === 'Paid' && body.paymentMethod === 'Pay Later';
             const order = await tx.order.update({
               where: { id },
               data: {
                 status: body.status,
                 paymentMethod: body.paymentMethod !== undefined ? body.paymentMethod : undefined,
-                paidAt: body.status === 'Paid' ? new Date() : undefined,
+                paymentStatus: body.status === 'Paid' ? (isPayLater ? 'Pending' : 'Paid') : undefined,
+                paidAt: body.status === 'Paid' ? (isPayLater ? null : new Date()) : undefined,
               },
               include: orderInclude,
             });

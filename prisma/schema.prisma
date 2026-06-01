@@ -38,6 +38,7 @@ model Order {
   total  Int
   status String // Preparing | Ready | Paid
   paymentMethod String @default("Cash") // Cash | UPI | Card
+  paymentStatus String @default("Paid") // Paid | Pending
 
   createdAt DateTime  @default(now())
   paidAt    DateTime?

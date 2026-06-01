@@ -137,6 +137,7 @@
 }
 .payment-dialog {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.5rem;
   background: var(--bg-main);
@@ -146,7 +147,7 @@
 }
 
 .payment-dialog .btn {
-  flex: 1;
+  flex: 1 1 90px;
 }
 
 /* Responsive adjustments for small screens */
