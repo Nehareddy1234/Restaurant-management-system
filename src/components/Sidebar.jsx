@@ -17,6 +17,7 @@ import {
   LogOut,
   User,
   DollarSign,
+  CreditCard,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -30,6 +31,7 @@ const ALL_RESTAURANT_NAV = [
   { path: '/menu', icon: <MenuIcon size={20} />, label: 'Menu' },
   { path: '/grocery', icon: <ShoppingBag size={20} />, label: 'Shopping List' },
   { path: '/history', icon: <History size={20} />, label: 'History' },
+  { path: '/pay-later', icon: <CreditCard size={20} />, label: 'Pay Later' },
   { path: '/expenses', icon: <DollarSign size={20} />, label: 'Expenses' },
   { path: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
 ];

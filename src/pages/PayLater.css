@@ -1,0 +1,152 @@
+.pay-later-page {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.pay-later-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pay-later-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.pay-later-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  color: var(--primary);
+}
+
+.pay-later-summary span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pay-later-summary strong {
+  display: block;
+  color: var(--text-main);
+  font-size: 1.15rem;
+}
+
+.pay-later-card {
+  padding: 1.5rem;
+}
+
+.pay-later-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pay-later-toolbar h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.pay-later-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.pay-later-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.pay-later-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pay-later-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.pay-later-subtext {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.pay-later-amount {
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.pay-later-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  background: rgba(253, 203, 110, 0.22);
+  color: #b36b00;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.pay-later-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.pay-later-actions .btn {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.pay-later-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.65rem;
+  padding: 3rem 1rem;
+}
+
+.pay-later-empty h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .pay-later-page {
+    padding: 1rem;
+  }
+
+  .pay-later-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pay-later-toolbar .search-bar {
+    width: 100%;
+  }
+}

@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import './History.css';
 
 export default function History() {
-  const { orderHistory, tables, correctHistoricalOrder } = useApp();
+  const { orderHistory, tables, correctHistoricalOrder, dataErrors } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [editingOrder, setEditingOrder] = useState(null);
@@ -37,7 +37,7 @@ export default function History() {
   };
 
   const getOrderDateKey = (order) => {
-    const timestampKey = formatDateKey(order.paidAt || order.createdAt);
+    const timestampKey = formatDateKey(order.createdAt);
     if (timestampKey) return timestampKey;
 
     const dateStr = order.date;
@@ -76,16 +76,19 @@ export default function History() {
     ? orderHistory 
     : orderHistory.filter(o => getOrderDateKey(o) === dateFilter);
 
-  const filteredHistory = filteredByDate.filter(order => {
-    const matchesId = order.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesNumber = order.orderNumber ? String(order.orderNumber).includes(searchQuery) : false;
-    const matchesTable = (order.table || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCustomer = (order.customerName || '').toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesId || matchesNumber || matchesTable || matchesCustomer;
-  });
+  const filteredHistory = filteredByDate
+    .filter(order => {
+      const matchesId = order.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesNumber = order.orderNumber ? String(order.orderNumber).includes(searchQuery) : false;
+      const matchesTable = (order.table || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCustomer = (order.customerName || '').toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesId || matchesNumber || matchesTable || matchesCustomer;
+    })
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
   const getOrderTotal = (order) => Number(order.total) || 0;
   const getPaymentMethod = (order) => order.paymentMethod || 'Cash';
+  const isPaidOrder = (order) => order.paymentStatus !== 'Pending';
 
   const formatDateTimeInput = (value) => {
     const date = value ? new Date(value) : new Date();
@@ -156,16 +159,17 @@ export default function History() {
     }
   };
 
-  const totalRevenue = filteredByDate.reduce((sum, order) => sum + getOrderTotal(order), 0);
+  const paidFilteredByDate = filteredByDate.filter(isPaidOrder);
+  const totalRevenue = paidFilteredByDate.reduce((sum, order) => sum + getOrderTotal(order), 0);
   const totalOrders = filteredByDate.length;
-  const cashTotal = filteredByDate.reduce((sum, order) => sum + (getPaymentMethod(order) === 'Cash' ? getOrderTotal(order) : 0), 0);
-  const upiTotal = filteredByDate.reduce((sum, order) => sum + (getPaymentMethod(order) === 'UPI' ? getOrderTotal(order) : 0), 0);
+  const cashTotal = paidFilteredByDate.reduce((sum, order) => sum + (getPaymentMethod(order) === 'Cash' ? getOrderTotal(order) : 0), 0);
+  const upiTotal = paidFilteredByDate.reduce((sum, order) => sum + (getPaymentMethod(order) === 'UPI' ? getOrderTotal(order) : 0), 0);
 
   const [showEODModal, setShowEODModal] = useState(false);
 
   // Calculate dish counts for EOD report
   const eodDishCounts = {};
-  filteredByDate.forEach(order => {
+  paidFilteredByDate.forEach(order => {
     order.itemList?.forEach(itemStr => {
       const parts = itemStr.split(' x');
       const namePart = parts[0].replace(/\s*\([^)]+\)/g, '').trim();
@@ -182,7 +186,7 @@ export default function History() {
       <header className="history-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1>Order History</h1>
-          <p className="text-muted">Review all completed and paid orders received till now</p>
+          <p className="text-muted">Review completed orders, pending payments, and paid history</p>
         </div>
         <div className="date-filter-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card-bg, #fff)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
           <Calendar size={18} className="text-muted" />
@@ -217,7 +221,7 @@ export default function History() {
             <DollarSign size={20} />
           </div>
           <div className="summary-info">
-            <span className="summary-label">Total History Revenue</span>
+            <span className="summary-label">Paid Revenue</span>
             <strong className="summary-value">₹{totalRevenue.toLocaleString()}</strong>
           </div>
         </div>
@@ -227,7 +231,7 @@ export default function History() {
             <ShoppingBag size={20} />
           </div>
           <div className="summary-info">
-            <span className="summary-label">Total Paid Orders</span>
+            <span className="summary-label">Completed Orders</span>
             <strong className="summary-value">{totalOrders} Orders</strong>
           </div>
         </div>
@@ -254,6 +258,12 @@ export default function History() {
       </div>
 
       <div className="history-content">
+        {dataErrors?.orders && (
+          <div className="history-load-error card">
+            Orders could not be loaded: {dataErrors.orders}
+          </div>
+        )}
+
         {/* Table list */}
         <div className="history-list-card card">
           <div className="list-header">
@@ -277,7 +287,8 @@ export default function History() {
                 <thead>
                   <tr>
                     <th>Order No.</th>
-                    <th>Date &amp; Time</th>
+                    <th>Ordered</th>
+                    <th>Paid</th>
                     <th>Name</th>
                     <th>Table</th>
                     <th>Items Count</th>
@@ -293,14 +304,24 @@ export default function History() {
                       <td>
                         <div className="date-time">
                           <span>{order.date || 'Today'}</span>
-                          <span className="text-muted" style={{ fontSize: '0.75rem' }}>at {order.closedAt}</span>
+                          <span className="text-muted" style={{ fontSize: '0.75rem' }}>{order.time}</span>
                         </div>
+                      </td>
+                      <td>
+                        {order.paymentStatus === 'Pending' ? (
+                          <span className="status-paid-badge pending">Pending</span>
+                        ) : (
+                          <div className="date-time">
+                            <span>{order.paidDate || order.date || '-'}</span>
+                            <span className="text-muted" style={{ fontSize: '0.75rem' }}>{order.paidTime || order.closedAt}</span>
+                          </div>
+                        )}
                       </td>
                       <td>{order.customerName || <span className="text-muted">-</span>}</td>
                       <td><span className="table-badge">{order.table}</span></td>
                       <td>{order.itemList?.length || 0} items</td>
                       <td><strong className="price-label">₹{order.total}</strong></td>
-                      <td>{order.paymentMethod || 'Cash'}</td>
+                      <td>{order.paymentStatus === 'Pending' ? 'Pay Later' : (order.paymentMethod || 'Cash')}</td>
                       <td>
                         <div className="history-actions">
                           <button
@@ -338,7 +359,9 @@ export default function History() {
               <div className="modal-body">
                 <div className="detail-row">
                   <span>Payment Method</span>
-                  <span className="status-paid-badge">{selectedOrder.paymentMethod || 'Cash'}</span>
+                  <span className={`status-paid-badge ${selectedOrder.paymentStatus === 'Pending' ? 'pending' : ''}`}>
+                    {selectedOrder.paymentStatus === 'Pending' ? 'Pay Later' : (selectedOrder.paymentMethod || 'Cash')}
+                  </span>
                 </div>
                 <div className="detail-row">
                   <span>Customer Name</span>
@@ -349,8 +372,12 @@ export default function History() {
                   <strong>{selectedOrder.table}</strong>
                 </div>
                 <div className="detail-row">
-                  <span>Completed At</span>
-                  <span>{selectedOrder.date || 'Today'} at {selectedOrder.closedAt}</span>
+                  <span>Ordered At</span>
+                  <span>{selectedOrder.date || 'Today'} at {selectedOrder.time}</span>
+                </div>
+                <div className="detail-row">
+                  <span>Paid At</span>
+                  <span>{selectedOrder.paymentStatus === 'Pending' ? 'Pending' : `${selectedOrder.paidDate || selectedOrder.date || 'Today'} at ${selectedOrder.paidTime || selectedOrder.closedAt}`}</span>
                 </div>
 
                 <div className="item-breakdown" style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>

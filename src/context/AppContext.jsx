@@ -64,6 +64,11 @@ const mergeLocalActiveOrders = (previousOrders, backendOrders) => {
   ];
 };
 
+const isClosedOrder = (order) => {
+  const status = String(order?.status || '').toLowerCase();
+  return status === 'paid' || status === 'closed' || status === 'completed';
+};
+
 export function AppProvider({ children }) {
   const [appMode, setAppMode] = useState('restaurant'); // 'restaurant' | 'grocery'
 
@@ -80,11 +85,13 @@ export function AppProvider({ children }) {
   const [groceryItems, setGroceryItems] = useState([]);
   const [storeInventory, setStoreInventory] = useState([]);
   const [storeOrders, setStoreOrders] = useState([]);
+  const [dataErrors, setDataErrors] = useState({});
   const isRefreshingRef = useRef(false);
   const pendingClosedOrderIdsRef = useRef(new Set());
 
   const loadBackendData = async () => {
     const responses = {};
+    const errors = {};
     const endpoints = [
       ['menu', `${API_BASE}/api/menu`],
       ['tables', `${API_BASE}/api/tables`],
@@ -95,24 +102,32 @@ export function AppProvider({ children }) {
     for (const [key, endpoint] of endpoints) {
       try {
         const res = await fetch(endpoint);
-        responses[key] = res && res.ok ? await res.json() : null;
-      } catch {
+        if (res && res.ok) {
+          responses[key] = await res.json();
+        } else {
+          const err = await res?.json?.().catch(() => ({}));
+          errors[key] = err?.details || err?.error || `Failed to load ${key}`;
+          responses[key] = null;
+        }
+      } catch (err) {
+        errors[key] = err.message || `Failed to load ${key}`;
         responses[key] = null;
       }
     }
+    setDataErrors(errors);
 
     if (responses.menu) setMenuItems(responses.menu);
     if (responses.tables) setTables(responses.tables);
     if (responses.orders) {
       const allOrders = responses.orders;
       const backendActiveOrders = allOrders.filter(o =>
-        o.status !== 'Paid' && !pendingClosedOrderIdsRef.current.has(o.id)
+        !isClosedOrder(o) && !pendingClosedOrderIdsRef.current.has(o.id)
       );
       setActiveOrders(prev =>
         mergeLocalActiveOrders(prev, backendActiveOrders)
           .filter(order => !pendingClosedOrderIdsRef.current.has(order.id))
       );
-      setOrderHistory(allOrders.filter(o => o.status === 'Paid'));
+      setOrderHistory(allOrders.filter(isClosedOrder));
     }
     if (responses.grocery) setGroceryItems(responses.grocery);
   };
@@ -616,7 +631,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       appMode, setAppMode,
-      tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders,
+      tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, dataErrors,
       refreshData,
       placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, updateOrderItemQuantity, markOrderReady, closeOrder, freeTable, updateTableStatus,
       addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem,

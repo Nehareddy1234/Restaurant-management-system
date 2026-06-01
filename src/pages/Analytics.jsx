@@ -35,6 +35,7 @@ function getIstDayIndex(value = new Date()) {
 export default function Analytics() {
   const { orderHistory, menuItems } = useApp();
   const [dateFilter, setDateFilter] = useState('All');
+  const paidOrderHistory = orderHistory.filter(order => order.paymentStatus !== 'Pending');
 
   // Timezone-safe local date parsing
   const parseLocalDate = (dateStr) => {
@@ -60,9 +61,8 @@ export default function Analytics() {
 
   // Group historical orders by date
   const ordersByDate = {};
-  orderHistory.forEach(order => {
-    const d = order.date || 'Today';
-    const normalizedDate = d === 'Today' ? getIstDateKey() : d;
+  paidOrderHistory.forEach(order => {
+    const normalizedDate = getIstDateKey(order.createdAt);
     if (!ordersByDate[normalizedDate]) {
       ordersByDate[normalizedDate] = [];
     }
@@ -165,9 +165,11 @@ export default function Analytics() {
     return dateStr;
   };
 
+  const getOrderDateKey = (order) => getIstDateKey(order.createdAt);
+
   const filteredHistory = dateFilter === 'All' 
-    ? orderHistory 
-    : orderHistory.filter(o => getActualDate(o.date) === dateFilter);
+    ? paidOrderHistory 
+    : paidOrderHistory.filter(o => getOrderDateKey(o) === dateFilter);
 
   // 1. Calculate General Financial Metrics
   const totalRevenue = filteredHistory.reduce((sum, order) => sum + order.total, 0);
@@ -243,8 +245,8 @@ export default function Analytics() {
 
   // 3. Prepare Data: Revenue Trends (last 7 days including today)
   const revenueByDate = {};
-  orderHistory.forEach(order => {
-    const d = order.date || 'Today';
+  paidOrderHistory.forEach(order => {
+    const d = getOrderDateKey(order);
     revenueByDate[d] = (revenueByDate[d] || 0) + order.total;
   });
 
@@ -320,8 +322,8 @@ export default function Analytics() {
     Sun: { name: 'Sun', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
   };
 
-  orderHistory.forEach(order => {
-    const dateObj = parseLocalDate(order.date);
+  paidOrderHistory.forEach(order => {
+    const dateObj = parseLocalDate(getOrderDateKey(order));
     let dayIndex = dateObj.getDay() - 1;
     if (dayIndex === -1) dayIndex = 6; // Sunday
     const dayName = daysOfWeek[dayIndex];

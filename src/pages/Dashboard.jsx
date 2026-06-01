@@ -48,7 +48,8 @@ export default function Dashboard() {
   const total     = tables.length;
   const todayKey = getIstDateKey();
   const todayRevenue = orderHistory
-    .filter(order => getIstDateKey(order.paidAt || order.createdAt) === todayKey)
+    .filter(order => order.paymentStatus !== 'Pending')
+    .filter(order => getIstDateKey(order.createdAt) === todayKey)
     .reduce((sum, order) => sum + (Number(order.total) || 0), 0);
 
   const stats = [

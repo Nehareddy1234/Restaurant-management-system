@@ -62,8 +62,8 @@ const USERS = [
 //  Role-based allowed nav paths
 // ─────────────────────────────────────────────────────
 export const ROLE_NAV = {
-  admin: ['/', '/pos', '/orders', '/tables', '/menu', '/grocery', '/history', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/history', '/store/analytics'],
-  account_manager: ['/', '/pos', '/orders', '/tables', '/menu', '/history', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/history', '/store/analytics'],
+  admin: ['/', '/pos', '/orders', '/tables', '/menu', '/grocery', '/history', '/pay-later', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/history', '/store/analytics'],
+  account_manager: ['/', '/pos', '/orders', '/tables', '/menu', '/history', '/pay-later', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/history', '/store/analytics'],
   waiter: ['/pos', '/orders', '/tables', '/grocery', '/store/pos'],
   customer: ['/customer-menu'],
 };

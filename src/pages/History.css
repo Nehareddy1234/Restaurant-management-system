@@ -63,6 +63,15 @@
   padding: 1.5rem;
 }
 
+.history-load-error {
+  border-color: rgba(232, 65, 24, 0.32);
+  background: rgba(232, 65, 24, 0.08);
+  color: #e84118;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.85rem 1rem;
+}
+
 .history-list-card .list-header {
   display: flex;
   justify-content: space-between;
@@ -244,6 +253,11 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.status-paid-badge.pending {
+  background: rgba(253, 203, 110, 0.22);
+  color: #b36b00;
 }
 
 .modal-body .detail-row {

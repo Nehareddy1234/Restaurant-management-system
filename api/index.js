@@ -32,6 +32,7 @@ const DEFAULT_TABLES = [
 ];
 
 let defaultTablesReady = false;
+let orderSchemaReady = false;
 
 async function ensureDefaultTables() {
   if (defaultTablesReady) return;
@@ -41,6 +42,15 @@ async function ensureDefaultTables() {
     skipDuplicates: true,
   });
   defaultTablesReady = true;
+}
+
+async function ensureOrderSchema() {
+  if (orderSchemaReady) return;
+
+  await prisma.$executeRawUnsafe('ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS "customerName" TEXT');
+  await prisma.$executeRawUnsafe('ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS "paymentStatus" TEXT NOT NULL DEFAULT \'Paid\'');
+
+  orderSchemaReady = true;
 }
 
 /**
@@ -131,7 +141,10 @@ function mapOrder(order) {
  *  - order: the latest active order (already mapped), or null
  */
 function mapTable(table) {
-  const activeOrder = (table.orders || []).find(o => o.status !== 'Paid') || null;
+  const activeOrder = (table.orders || []).find(o => {
+    const status = String(o.status || '').toLowerCase();
+    return status !== 'paid' && status !== 'closed' && status !== 'completed';
+  }) || null;
   return {
     ...table,
     orders: undefined,  // remove raw array — frontend uses `order` (singular)
@@ -733,6 +746,8 @@ export default async function handler(req, res) {
      * =========================================================
      */
     if (path.startsWith('/api/orders')) {
+      await ensureOrderSchema();
+
       const idPart = path
         .replace('/api/orders', '')
         .replace(/^\//, '');
@@ -767,9 +782,9 @@ export default async function handler(req, res) {
 
         const orders = await prisma.order.findMany({
           include: orderInclude,
-          orderBy: {
-            createdAt: 'desc',
-          },
+          orderBy: [
+            { createdAt: 'desc' },
+          ],
         });
 
         return send(res, 200, orders.map(mapOrder));
