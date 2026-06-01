@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
-import { Search, Calendar, DollarSign, ShoppingBag, Eye, Printer, FileText, Banknote, Smartphone } from 'lucide-react';
+import { Search, Calendar, DollarSign, ShoppingBag, Eye, Printer, FileText, Banknote, Smartphone, Edit3, Save } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './History.css';
 
 export default function History() {
-  const { orderHistory } = useApp();
+  const { orderHistory, tables, correctHistoricalOrder } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [editForm, setEditForm] = useState({
+    total: '',
+    paymentMethod: 'Cash',
+    customerName: '',
+    tableId: '',
+    paidAt: '',
+  });
+  const [editError, setEditError] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [dateFilter, setDateFilter] = useState('All');
 
   const formatDateKey = (value) => {
@@ -32,8 +42,7 @@ export default function History() {
 
     const dateStr = order.date;
     if (!dateStr || dateStr === 'Today') {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return formatDateKey(new Date());
     }
 
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
@@ -56,7 +65,7 @@ export default function History() {
       };
       const day = match[1].padStart(2, '0');
       const month = monthMap[match[2].toLowerCase()];
-      const year = match[3] || String(new Date().getFullYear());
+      const year = match[3] || formatDateKey(new Date()).slice(0, 4);
       if (month) return `${year}-${month}-${day}`;
     }
 
@@ -71,11 +80,81 @@ export default function History() {
     const matchesId = order.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesNumber = order.orderNumber ? String(order.orderNumber).includes(searchQuery) : false;
     const matchesTable = (order.table || '').toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesId || matchesNumber || matchesTable;
+    const matchesCustomer = (order.customerName || '').toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesId || matchesNumber || matchesTable || matchesCustomer;
   });
 
   const getOrderTotal = (order) => Number(order.total) || 0;
   const getPaymentMethod = (order) => order.paymentMethod || 'Cash';
+
+  const formatDateTimeInput = (value) => {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) return '';
+
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      hourCycle: 'h23',
+    }).formatToParts(date);
+
+    const getPart = (type) => parts.find(part => part.type === type)?.value;
+    return `${getPart('year')}-${getPart('month')}-${getPart('day')}T${getPart('hour')}:${getPart('minute')}`;
+  };
+
+  const openEditOrder = (order) => {
+    setEditingOrder(order);
+    setEditForm({
+      total: String(order.total ?? 0),
+      paymentMethod: order.paymentMethod || 'Cash',
+      customerName: order.customerName || '',
+      tableId: order.tableId ? String(order.tableId) : '',
+      paidAt: formatDateTimeInput(order.paidAt || order.createdAt),
+    });
+    setEditError('');
+  };
+
+  const handleEditFormChange = (field, value) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveOrderEdit = async (e) => {
+    e.preventDefault();
+    if (!editingOrder) return;
+
+    const total = Number(editForm.total);
+    if (!Number.isFinite(total) || total < 0) {
+      setEditError('Enter a valid total amount.');
+      return;
+    }
+    if (!editForm.paidAt) {
+      setEditError('Choose the completed date and time.');
+      return;
+    }
+
+    setIsSavingEdit(true);
+    setEditError('');
+
+    try {
+      const updated = await correctHistoricalOrder(editingOrder.id, {
+        total,
+        paymentMethod: editForm.paymentMethod,
+        customerName: editForm.customerName,
+        tableId: editForm.tableId ? Number(editForm.tableId) : null,
+        paidAt: `${editForm.paidAt}:00+05:30`,
+      });
+      setEditingOrder(null);
+      setSelectedOrder(prev => prev?.id === updated.id ? updated : prev);
+    } catch (err) {
+      setEditError(err.message || 'Failed to update order.');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const totalRevenue = filteredByDate.reduce((sum, order) => sum + getOrderTotal(order), 0);
   const totalOrders = filteredByDate.length;
@@ -199,6 +278,7 @@ export default function History() {
                   <tr>
                     <th>Order No.</th>
                     <th>Date &amp; Time</th>
+                    <th>Name</th>
                     <th>Table</th>
                     <th>Items Count</th>
                     <th>Total Bill</th>
@@ -216,18 +296,28 @@ export default function History() {
                           <span className="text-muted" style={{ fontSize: '0.75rem' }}>at {order.closedAt}</span>
                         </div>
                       </td>
+                      <td>{order.customerName || <span className="text-muted">-</span>}</td>
                       <td><span className="table-badge">{order.table}</span></td>
                       <td>{order.itemList?.length || 0} items</td>
                       <td><strong className="price-label">₹{order.total}</strong></td>
                       <td>{order.paymentMethod || 'Cash'}</td>
                       <td>
-                        <button
-                          className="btn btn-outline detail-btn"
-                          onClick={() => setSelectedOrder(order)}
-                          style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-                        >
-                          <Eye size={14} /> View Details
-                        </button>
+                        <div className="history-actions">
+                          <button
+                            className="btn btn-outline detail-btn"
+                            onClick={() => setSelectedOrder(order)}
+                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                          >
+                            <Eye size={14} /> View
+                          </button>
+                          <button
+                            className="btn btn-outline detail-btn"
+                            onClick={() => openEditOrder(order)}
+                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                          >
+                            <Edit3 size={14} /> Edit
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -249,6 +339,10 @@ export default function History() {
                 <div className="detail-row">
                   <span>Payment Method</span>
                   <span className="status-paid-badge">{selectedOrder.paymentMethod || 'Cash'}</span>
+                </div>
+                <div className="detail-row">
+                  <span>Customer Name</span>
+                  <strong>{selectedOrder.customerName || '-'}</strong>
                 </div>
                 <div className="detail-row">
                   <span>Table/Type</span>
@@ -274,7 +368,94 @@ export default function History() {
                   <span>Grand Total</span>
                   <strong>₹{selectedOrder.total}</strong>
                 </div>
+
+                <div className="modal-actions" style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn btn-primary" onClick={() => openEditOrder(selectedOrder)} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <Edit3 size={16} /> Edit Order
+                  </button>
+                </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {editingOrder && (
+          <div className="order-detail-modal">
+            <div className="modal-content card history-edit-modal">
+              <div className="modal-header">
+                <h3>Edit Order #{editingOrder.orderNumber}</h3>
+                <button className="close-btn" onClick={() => setEditingOrder(null)}>&times;</button>
+              </div>
+              <form className="history-edit-form" onSubmit={handleSaveOrderEdit}>
+                {editError && <div className="history-edit-error">{editError}</div>}
+
+                <div className="form-group">
+                  <label>Total Bill</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={editForm.total}
+                    onChange={(e) => handleEditFormChange('total', e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Customer Name</label>
+                  <input
+                    type="text"
+                    value={editForm.customerName}
+                    onChange={(e) => handleEditFormChange('customerName', e.target.value)}
+                    placeholder="Optional name for this order"
+                    maxLength={80}
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Payment Method</label>
+                    <select
+                      value={editForm.paymentMethod}
+                      onChange={(e) => handleEditFormChange('paymentMethod', e.target.value)}
+                    >
+                      <option value="Cash">Cash</option>
+                      <option value="UPI">UPI</option>
+                      <option value="Card">Card</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Table/Type</label>
+                    <select
+                      value={editForm.tableId}
+                      onChange={(e) => handleEditFormChange('tableId', e.target.value)}
+                    >
+                      <option value="">Takeaway</option>
+                      {tables.map(table => (
+                        <option key={table.id} value={table.id}>Table {table.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Completed At</label>
+                  <input
+                    type="datetime-local"
+                    value={editForm.paidAt}
+                    onChange={(e) => handleEditFormChange('paidAt', e.target.value)}
+                  />
+                </div>
+
+                <div className="modal-actions history-edit-actions">
+                  <button type="button" className="btn btn-outline" onClick={() => setEditingOrder(null)} disabled={isSavingEdit}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={isSavingEdit}>
+                    <Save size={16} /> {isSavingEdit ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

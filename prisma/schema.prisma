@@ -24,12 +24,14 @@ model Table {
 
 model Order {
   id          String @id @default(uuid())
-  orderNumber Int    @default(autoincrement())
+  orderNumber Int
+  orderDate   String
 
   tableId    Int?
   table      Table?   @relation(fields: [tableId], references: [id])
   customerId String?
   customer   Profile? @relation(fields: [customerId], references: [id])
+  customerName String?
 
   items OrderItem[]
 
@@ -39,6 +41,14 @@ model Order {
 
   createdAt DateTime  @default(now())
   paidAt    DateTime?
+
+  @@unique([orderDate, orderNumber])
+}
+
+model OrderDailySequence {
+  date       String   @id
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
 }
 
 model OrderItem {

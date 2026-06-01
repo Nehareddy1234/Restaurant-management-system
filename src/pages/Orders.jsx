@@ -57,6 +57,7 @@ export default function Orders() {
                   <div>
                     <span className="order-id">#{order.orderNumber}</span> <span className="text-muted" style={{ fontSize: '0.7rem' }}>({order.id.slice(0, 8)})</span>
                     <span className="order-table">{order.table}</span>
+                    {order.customerName && <span className="order-customer">{order.customerName}</span>}
                   </div>
                   <span className="order-status-badge" style={{ background: sc.bg, color: sc.color }}>
                     {sc.icon} {order.status}

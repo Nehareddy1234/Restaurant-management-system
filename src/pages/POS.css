@@ -39,7 +39,8 @@
 }
 
 /* Table Selector */
-.table-selector {
+.table-selector,
+.customer-name-selector {
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
@@ -47,7 +48,8 @@
   gap: 0.4rem;
 }
 
-.table-selector label {
+.table-selector label,
+.customer-name-selector label {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -55,7 +57,8 @@
   letter-spacing: 0.04em;
 }
 
-.table-selector select {
+.table-selector select,
+.customer-name-selector input {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
@@ -68,7 +71,8 @@
   transition: border-color 0.2s;
 }
 
-.table-selector select:focus {
+.table-selector select:focus,
+.customer-name-selector input:focus {
   border-color: var(--primary);
 }
 
@@ -623,6 +627,7 @@
 
   .cart-header,
   .table-selector,
+  .customer-name-selector,
   .cart-summary {
     padding: 0.8rem;
   }

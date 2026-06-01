@@ -74,6 +74,15 @@
   margin-top: 0.1rem;
 }
 
+.order-customer {
+  display: block;
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-top: 0.15rem;
+  overflow-wrap: anywhere;
+}
+
 .order-status-badge {
   display: inline-flex;
   align-items: center;
@@ -159,4 +168,3 @@
     font-size: 0.9rem;
   }
 }
-

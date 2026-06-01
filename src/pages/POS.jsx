@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Minus, Trash2, ShoppingCart } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import './POS.css';
 
 const categories = ['All', 'Combos', 'Curries', 'Rotis', 'Rice', 'Drinks'];
 
 export default function POS() {
   const { tables, menuItems, placeOrder, activeOrders, updateOrder } = useApp();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const canSetCustomerName = ['admin', 'account_manager'].includes(currentUser?.role);
 
   // Robust parsing: extract editOrderId using standard searchParams with a direct window.location fallback for unencoded '#' hash tags
   let editOrderId = searchParams.get('edit');
@@ -24,6 +27,7 @@ export default function POS() {
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState([]);
   const [selectedTable, setSelectedTable] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [loadedOrderId, setLoadedOrderId] = useState(null);
   const [activeTab, setActiveTab] = useState('menu'); // 'menu' or 'cart' for mobile viewports
@@ -66,6 +70,7 @@ export default function POS() {
             }
           });
           setCart(reconstructedCart);
+          setCustomerName(order.customerName || '');
 
           // order.table is a string like "Table T1" or "Takeaway" (from backend mapOrder)
           if (order.table && order.table.startsWith('Table ')) {
@@ -84,6 +89,7 @@ export default function POS() {
       // Clear out if we navigated away from editing
       setCart([]);
       setSelectedTable('');
+      setCustomerName('');
       setLoadedOrderId(null);
     }
   }, [editOrderId, activeOrders, menuItems, loadedOrderId]);
@@ -150,9 +156,9 @@ export default function POS() {
 
     try {
       if (editOrderId) {
-        await updateOrder(editOrderId, cart, tableId);
+        await updateOrder(editOrderId, cart, tableId, canSetCustomerName ? customerName : undefined);
       } else {
-        await placeOrder(cart, tableId);
+        await placeOrder(cart, tableId, 'Cash', canSetCustomerName ? customerName : '');
       }
     } catch (err) {
       alert(`Could not place order: ${err.message}`);
@@ -162,6 +168,7 @@ export default function POS() {
 
     setCart([]);
     setSelectedTable('');
+    setCustomerName('');
     setLoadedOrderId(null);
     setSearchParams({});
     setActiveTab('menu');
@@ -174,6 +181,7 @@ export default function POS() {
     setSearchParams({});
     setCart([]);
     setSelectedTable('');
+    setCustomerName('');
     setLoadedOrderId(null);
     setActiveTab('menu');
   };
@@ -278,6 +286,20 @@ export default function POS() {
             ))}
           </select>
         </div>
+
+        {canSetCustomerName && (
+          <div className="customer-name-selector">
+            <label htmlFor="customer-name">Customer Name</label>
+            <input
+              id="customer-name"
+              type="text"
+              value={customerName}
+              onChange={e => setCustomerName(e.target.value)}
+              placeholder="Optional name for this order"
+              maxLength={80}
+            />
+          </div>
+        )}
 
         <div className="cart-items">
           {cart.length === 0 ? (

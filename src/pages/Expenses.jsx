@@ -25,6 +25,29 @@ const CATEGORIES = [
   { name: 'Miscellaneous', color: '#b2bec3', bg: 'rgba(178, 190, 195, 0.15)' },
 ];
 
+function getIstDateInputValue(value = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(value);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
+function formatIstDate(value) {
+  return new Date(value).toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +58,7 @@ export default function Expenses() {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Ingredients');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getIstDateInputValue());
   const [showAddForm, setShowAddForm] = useState(false);
 
   // Filters & Search
@@ -96,7 +119,7 @@ export default function Expenses() {
       setDescription('');
       setAmount('');
       setCategory('Ingredients');
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(getIstDateInputValue());
       setShowAddForm(false);
       setError('');
     } catch (err) {
@@ -371,7 +394,7 @@ export default function Expenses() {
                             </span>
                           </td>
                           <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            {new Date(exp.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {formatIstDate(exp.date)}
                           </td>
                           <td style={{ textAlign: 'right', fontWeight: 700, color: '#e84118' }}>
                             - ₹{exp.amount.toLocaleString('en-IN')}

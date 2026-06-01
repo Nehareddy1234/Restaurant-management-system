@@ -19,6 +19,42 @@ const initialTables = [
 // No hardcoded fallback — always load from the database
 const initialMenuItems = [];
 
+const IST_TIME_OPTIONS = {
+  timeZone: 'Asia/Kolkata',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+};
+
+const IST_DATE_OPTIONS = {
+  timeZone: 'Asia/Kolkata',
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+};
+
+function formatIstTime(value = new Date()) {
+  return new Date(value).toLocaleTimeString('en-IN', IST_TIME_OPTIONS).toUpperCase();
+}
+
+function formatIstDate(value = new Date()) {
+  return new Date(value).toLocaleDateString('en-IN', IST_DATE_OPTIONS);
+}
+
+function getIstDateInputValue(value = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(value);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
 const mergeLocalActiveOrders = (previousOrders, backendOrders) => {
   const localOrders = previousOrders.filter(order => String(order.id).startsWith('local-'));
   const backendIds = new Set(backendOrders.map(order => order.id));
@@ -143,7 +179,7 @@ export function AppProvider({ children }) {
     };
   }, []);
 
-  const buildLocalOrder = (cartItems, tableId, paymentMethod = 'Cash', id = `local-${Date.now()}`) => {
+  const buildLocalOrder = (cartItems, tableId, paymentMethod = 'Cash', customerName = '', id = `local-${Date.now()}`) => {
     const now = new Date();
     const addOnTotal = (item) => ((item.addOns?.Roti || 0) * 15) + ((item.addOns?.Curry || 0) * 40);
     const total = cartItems.reduce((sum, item) => sum + (item.price + addOnTotal(item)) * item.quantity, 0);
@@ -155,7 +191,8 @@ export function AppProvider({ children }) {
       total,
       status: 'Preparing',
       paymentMethod,
-      time: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+      customerName: customerName.trim() || null,
+      time: formatIstTime(now),
       createdAt: now.toISOString(),
     };
   };
@@ -187,9 +224,9 @@ export function AppProvider({ children }) {
   };
 
   // Place a new order
-  const placeOrder = async (cartItems, tableId, paymentMethod = 'Cash') => {
+  const placeOrder = async (cartItems, tableId, paymentMethod = 'Cash', customerName = '') => {
     const tempId = `local-${Date.now()}`;
-    const optimisticOrder = buildLocalOrder(cartItems, tableId, paymentMethod, tempId);
+    const optimisticOrder = buildLocalOrder(cartItems, tableId, paymentMethod, customerName, tempId);
     upsertActiveOrder(optimisticOrder);
     setTableOrder(tableId, optimisticOrder);
 
@@ -201,6 +238,7 @@ export function AppProvider({ children }) {
         body: JSON.stringify({
           tableId: tableId || null,
           paymentMethod,
+          customerName,
           items: cartItems.map(c => ({
             menuItemId: c.id,
             quantity: c.quantity,
@@ -227,13 +265,14 @@ export function AppProvider({ children }) {
     }
   };
 
-  const updateOrder = async (orderId, cartItems, tableId) => {
+  const updateOrder = async (orderId, cartItems, tableId, customerName = undefined) => {
     try {
       const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tableId: tableId || null,
+          customerName,
           items: cartItems.map(c => ({
             menuItemId: c.id,
             quantity: c.quantity,
@@ -264,6 +303,26 @@ export function AppProvider({ children }) {
       console.error('Failed to update order via API', e);
     }
     return null;
+  };
+
+  const correctHistoricalOrder = async (orderId, corrections) => {
+    const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        correction: true,
+        ...corrections,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.details || err.error || `Failed to update order (${res.status})`);
+    }
+
+    const updatedOrder = await res.json();
+    setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
+    return updatedOrder;
   };
 
   const updateOrderItemQuantity = (orderId, nameToUpdate, delta, isAddOn = null, addOnDelta = 0) => {
@@ -301,7 +360,7 @@ export function AppProvider({ children }) {
     if (order) {
       pendingClosedOrderIdsRef.current.add(orderId);
       const finalPaymentMethod = paymentMethod || order.paymentMethod || 'Cash';
-      const paidOrder = { ...order, status: 'Paid', closedAt: new Date().toLocaleTimeString(), paymentMethod: finalPaymentMethod };
+      const paidOrder = { ...order, status: 'Paid', closedAt: formatIstTime(), paymentMethod: finalPaymentMethod };
       setOrderHistory(prev => [paidOrder, ...prev]);
       setActiveOrders(prev => prev.filter(o => o.id !== orderId));
       setTables(prev => prev.map(t => t.order?.id === orderId ? { ...t, status: 'available', order: null } : t));
@@ -499,7 +558,7 @@ export function AppProvider({ children }) {
     const now = new Date();
     const order = {
       id: `GRO-${Date.now()}`,
-      orderNumber: Date.now().toString().slice(-6),
+      orderNumber: '...',
       items: cartItems.map(item => ({
         id: item.id,
         name: item.name,
@@ -508,8 +567,8 @@ export function AppProvider({ children }) {
       })),
       total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
       paymentMethod,
-      date: now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-      time: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+      date: formatIstDate(now),
+      time: formatIstTime(now),
       createdAt: now.toISOString(),
     };
 
@@ -529,11 +588,12 @@ export function AppProvider({ children }) {
       appMode, setAppMode,
       tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders,
       refreshData,
-      placeOrder, updateOrder, updateOrderItemQuantity, markOrderReady, closeOrder, freeTable, updateTableStatus,
+      placeOrder, updateOrder, correctHistoricalOrder, updateOrderItemQuantity, markOrderReady, closeOrder, freeTable, updateTableStatus,
       addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
       addStoreItem, updateStoreItemStock, checkoutStoreOrder,
-      sidebarOpen, sidebarMinimized, toggleSidebarMinimized, toggleSidebarOpen, closeSidebar
+      sidebarOpen, sidebarMinimized, toggleSidebarMinimized, toggleSidebarOpen, closeSidebar,
+      formatIstDate, formatIstTime, getIstDateInputValue
     }}>
       {children}
     </AppContext.Provider>

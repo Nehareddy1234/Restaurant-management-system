@@ -10,6 +10,28 @@ import './Analytics.css';
 const COLORS = ['#e84118', '#0097e6', '#8c7ae6', '#4cd137', '#e1b12c', '#00a8ff'];
 const PIE_COLORS = ['#3498db', '#9b59b6', '#e74c3c', '#f1c40f', '#2ecc71'];
 
+function getIstDateKey(value = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(value);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
+function getIstDayIndex(value = new Date()) {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    weekday: 'short',
+  }).format(value);
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekday);
+}
+
 export default function Analytics() {
   const { orderHistory, menuItems } = useApp();
   const [dateFilter, setDateFilter] = useState('All');
@@ -40,9 +62,7 @@ export default function Analytics() {
   const ordersByDate = {};
   orderHistory.forEach(order => {
     const d = order.date || 'Today';
-    const now = new Date();
-    const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const normalizedDate = d === 'Today' ? localToday : d;
+    const normalizedDate = d === 'Today' ? getIstDateKey() : d;
     if (!ordersByDate[normalizedDate]) {
       ordersByDate[normalizedDate] = [];
     }
@@ -124,7 +144,7 @@ export default function Analytics() {
     return "Mid-week trend predicted. Keep standard inventory levels and focus on takeaway speed.";
   };
 
-  const todayIndex = new Date().getDay();
+  const todayIndex = getIstDayIndex();
   const dayNamesFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -140,8 +160,7 @@ export default function Analytics() {
 
   const getActualDate = (dateStr) => {
     if (!dateStr || dateStr === 'Today') {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return getIstDateKey();
     }
     return dateStr;
   };

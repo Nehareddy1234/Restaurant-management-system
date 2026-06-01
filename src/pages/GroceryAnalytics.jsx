@@ -10,6 +10,20 @@ import './Analytics.css'; // Reusing the same styles as Restaurant Analytics
 const COLORS = ['#27ae60', '#f39c12', '#2980b9', '#8e44ad', '#e74c3c', '#16a085'];
 const PIE_COLORS = ['#3498db', '#9b59b6', '#e74c3c', '#f1c40f', '#2ecc71'];
 
+function getIstDateKey(value = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(value);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
 export default function GroceryAnalytics() {
   const { storeOrders, storeInventory } = useApp();
   const [dateFilter, setDateFilter] = useState('All');
@@ -31,8 +45,7 @@ export default function GroceryAnalytics() {
 
   const getActualDate = (dateStr) => {
     if (!dateStr || dateStr === 'Today') {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return getIstDateKey();
     }
     return dateStr;
   };

@@ -15,6 +15,23 @@ const statusBadge = (status) => {
   return <span className="status-badge" style={{ background: s.bg, color: s.color }}>{status}</span>;
 };
 
+const getIstDateKey = (value = new Date()) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return year && month && day ? `${year}-${month}-${day}` : null;
+};
+
 export default function Dashboard() {
   const { tables, activeOrders, orderHistory } = useApp();
   const { currentUser, employees } = useAuth();
@@ -29,7 +46,10 @@ export default function Dashboard() {
   const isAdmin = currentUser?.role === 'admin';
   const occupied  = tables.filter(t => t.status === 'occupied').length;
   const total     = tables.length;
-  const todayRevenue = orderHistory.reduce((s, o) => s + o.total, 0);
+  const todayKey = getIstDateKey();
+  const todayRevenue = orderHistory
+    .filter(order => getIstDateKey(order.paidAt || order.createdAt) === todayKey)
+    .reduce((sum, order) => sum + (Number(order.total) || 0), 0);
 
   const stats = [
     { label: "Today's Revenue",  value: `₹${todayRevenue.toLocaleString()}`, change: '', icon: <TrendingUp size={22} />, color: '#e84118' },

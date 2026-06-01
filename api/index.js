@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
  * same client and don't exhaust the PgBouncer connection pool.
  */
 const globalForPrisma = globalThis;
+const IST_TIME_ZONE = 'Asia/Kolkata';
 
 export const prisma =
   globalForPrisma.prisma ??
@@ -100,8 +101,8 @@ function mapOrder(order) {
   const tableStr = order.table ? `Table ${order.table.name}` : 'Takeaway';
 
   const d = order.createdAt ? new Date(order.createdAt) : new Date();
-  const dateOptions = { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short' };
-  const timeOptions = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true };
+  const dateOptions = { timeZone: IST_TIME_ZONE, day: '2-digit', month: 'short' };
+  const timeOptions = { timeZone: IST_TIME_ZONE, hour: '2-digit', minute: '2-digit', hour12: true };
   const dateStr = d.toLocaleDateString('en-IN', dateOptions);
   const timeStr = d.toLocaleTimeString('en-IN', timeOptions);
   const time = `${dateStr}, ${timeStr.toUpperCase()}`;
@@ -151,13 +152,88 @@ function normalizePaymentMethod(paymentMethod) {
   return ['Cash', 'UPI', 'Card'].includes(paymentMethod) ? paymentMethod : 'Cash';
 }
 
+function normalizeCustomerName(customerName) {
+  const normalized = typeof customerName === 'string' ? customerName.trim() : '';
+  return normalized || null;
+}
+
+function parseOrderCorrection(body) {
+  const data = {};
+
+  if (body.total !== undefined) {
+    const total = Number(body.total);
+    if (!Number.isFinite(total) || total < 0) {
+      throw new Error('Order total must be zero or greater');
+    }
+    data.total = Math.round(total);
+  }
+
+  if (body.paymentMethod !== undefined) {
+    data.paymentMethod = normalizePaymentMethod(body.paymentMethod);
+  }
+
+  if (body.customerName !== undefined) {
+    data.customerName = normalizeCustomerName(body.customerName);
+  }
+
+  if (body.tableId !== undefined) {
+    const tableId = body.tableId ? Number.parseInt(body.tableId, 10) : null;
+    if (tableId !== null && (!Number.isInteger(tableId) || tableId <= 0)) {
+      throw new Error('Invalid table');
+    }
+    data.tableId = tableId;
+  }
+
+  if (body.paidAt !== undefined) {
+    const paidAt = new Date(body.paidAt);
+    if (Number.isNaN(paidAt.getTime())) {
+      throw new Error('Invalid completed time');
+    }
+    data.paidAt = paidAt;
+  }
+
+  return data;
+}
+
+function getIstDateKey(value = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: IST_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(value);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
 function parseExpenseDate(value) {
-  const raw = value || new Date().toISOString().slice(0, 10);
+  const raw = value || getIstDateKey();
   const date = new Date(`${raw}T00:00:00.000Z`);
   if (Number.isNaN(date.getTime())) {
     throw new Error('Invalid expense date');
   }
   return date;
+}
+
+function getOrderDateKey(value = new Date()) {
+  return getIstDateKey(value);
+}
+
+async function getNextOrderNumber(tx) {
+  const orderDate = getOrderDateKey();
+  const sequence = await tx.orderDailySequence.upsert({
+    where: { date: orderDate },
+    create: { date: orderDate, lastNumber: 1 },
+    update: { lastNumber: { increment: 1 } },
+  });
+
+  return {
+    orderDate,
+    orderNumber: sequence.lastNumber,
+  };
 }
 
 function parseOrderItems(items) {
@@ -705,12 +781,16 @@ export default async function handler(req, res) {
         const tableId = body.tableId ? Number.parseInt(body.tableId, 10) : null;
 
         const createdWithItems = await prisma.$transaction(async (tx) => {
+          const { orderDate, orderNumber } = await getNextOrderNumber(tx);
           const created = await tx.order.create({
             data: {
+              orderDate,
+              orderNumber,
               tableId,
               total,
               status: 'Preparing',
               paymentMethod: normalizePaymentMethod(body.paymentMethod),
+              customerName: normalizeCustomerName(body.customerName),
               items: {
                 create: enrichedCart.map(ci => ({
                   menuItemId: ci.menuItemId,
@@ -742,6 +822,18 @@ export default async function handler(req, res) {
        */
       if (method === 'PUT' && id) {
         const body = await getJsonBody(req);
+
+        // Limited correction path for already-paid history records.
+        if (body.correction === true) {
+          const data = parseOrderCorrection(body);
+          const updated = await prisma.order.update({
+            where: { id },
+            data,
+            include: orderInclude,
+          });
+
+          return send(res, 200, mapOrder(updated));
+        }
 
         // Simple status-only update (e.g. Preparing → Ready → Paid)
         if (body.status && !body.items) {
@@ -791,6 +883,7 @@ export default async function handler(req, res) {
               data: {
                 total,
                 tableId: nextTableId,
+                customerName: body.customerName !== undefined ? normalizeCustomerName(body.customerName) : undefined,
                 items: {
                   create: enrichedCart.map(ci => ({
                     menuItemId: ci.menuItemId,
@@ -876,7 +969,10 @@ export default async function handler(req, res) {
     if (
       error.message === 'Order must include at least one item' ||
       error.message === 'Invalid menu item in order' ||
-      error.message === 'Invalid item quantity in order'
+      error.message === 'Invalid item quantity in order' ||
+      error.message === 'Order total must be zero or greater' ||
+      error.message === 'Invalid table' ||
+      error.message === 'Invalid completed time'
     ) {
       return send(res, 400, {
         error: error.message,
