@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { 
   DollarSign, 
   Plus, 
@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import './Expenses.css';
 
-const EXPENSES_RESET_VERSION = '2026-05-30-reset';
+const isCapacitor = typeof window !== 'undefined' && window.Capacitor !== undefined;
+const API_BASE = isCapacitor ? 'https://nehaskitchen.vercel.app' : '';
 
 const CATEGORIES = [
   { name: 'Ingredients', color: '#ff7675', bg: 'rgba(255, 118, 117, 0.15)' },
@@ -24,27 +25,11 @@ const CATEGORIES = [
   { name: 'Miscellaneous', color: '#b2bec3', bg: 'rgba(178, 190, 195, 0.15)' },
 ];
 
-const REMOVED_SAMPLE_EXPENSES = new Set([
-  'Monthly Rent',
-  'Fresh Vegetables & Dairy',
-  'Staff Salaries',
-  'Electricity & Water Bill',
-  'Social Media Ads & Flyers',
-  'Kitchen Spoons & Plates replacement',
-]);
-
 export default function Expenses() {
-  const [expenses, setExpenses] = useState(() => {
-    const saved = localStorage.getItem('nk_expenses');
-    const resetVersion = localStorage.getItem('nk_expenses_reset_version');
-    if (resetVersion !== EXPENSES_RESET_VERSION) {
-      localStorage.setItem('nk_expenses_reset_version', EXPENSES_RESET_VERSION);
-      localStorage.removeItem('nk_expenses');
-      return [];
-    }
-    if (!saved) return [];
-    return JSON.parse(saved).filter(exp => !REMOVED_SAMPLE_EXPENSES.has(exp.description));
-  });
+  const [expenses, setExpenses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const isRefreshingRef = useRef(false);
 
   // State for adding new expense
   const [description, setDescription] = useState('');
@@ -57,36 +42,88 @@ export default function Expenses() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
 
-  // Save to localStorage
+  const loadExpenses = async () => {
+    if (isRefreshingRef.current) return;
+    isRefreshingRef.current = true;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/expenses`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Failed to load expenses (${res.status})`);
+      }
+      setExpenses(await res.json());
+      setError('');
+    } catch (err) {
+      console.error('Failed to load expenses', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+      isRefreshingRef.current = false;
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem('nk_expenses', JSON.stringify(expenses));
-  }, [expenses]);
+    loadExpenses();
+    const intervalId = setInterval(loadExpenses, 10000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Handle Add
-  const handleAddExpense = (e) => {
+  const handleAddExpense = async (e) => {
     e.preventDefault();
     if (!description.trim() || !amount || parseFloat(amount) <= 0) return;
 
-    const newExpense = {
-      id: Date.now(),
-      description: description.trim(),
-      category,
-      amount: parseFloat(amount),
-      date
-    };
+    try {
+      const res = await fetch(`${API_BASE}/api/expenses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: description.trim(),
+          category,
+          amount: parseFloat(amount),
+          date,
+        }),
+      });
 
-    setExpenses(prev => [newExpense, ...prev]);
-    setDescription('');
-    setAmount('');
-    setCategory('Ingredients');
-    setDate(new Date().toISOString().split('T')[0]);
-    setShowAddForm(false);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Failed to save expense (${res.status})`);
+      }
+
+      const savedExpense = await res.json();
+      setExpenses(prev => [savedExpense, ...prev.filter(exp => exp.id !== savedExpense.id)]);
+      setDescription('');
+      setAmount('');
+      setCategory('Ingredients');
+      setDate(new Date().toISOString().split('T')[0]);
+      setShowAddForm(false);
+      setError('');
+    } catch (err) {
+      console.error('Failed to save expense', err);
+      setError(err.message);
+    }
   };
 
   // Handle Delete
-  const handleDeleteExpense = (id) => {
+  const handleDeleteExpense = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
+      const snapshot = expenses;
       setExpenses(prev => prev.filter(exp => exp.id !== id));
+      try {
+        const res = await fetch(`${API_BASE}/api/expenses/${id}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Failed to delete expense (${res.status})`);
+        }
+        setError('');
+      } catch (err) {
+        console.error('Failed to delete expense', err);
+        setExpenses(snapshot);
+        setError(err.message);
+      }
     }
   };
 
@@ -155,7 +192,7 @@ export default function Expenses() {
           <div className="stat-content">
             <p className="stat-label">Total Bills Filed</p>
             <h2 className="stat-value">{expenses.length} Records</h2>
-            <span className="stat-sub">Stored locally in your profile</span>
+            <span className="stat-sub">Synced from the database</span>
           </div>
         </div>
       </div>
@@ -201,6 +238,12 @@ export default function Expenses() {
         <div className="expenses-list-section">
           
           {/* Add Expense Form (Toggled) */}
+          {error && (
+            <div className="expense-form-card card" style={{ borderColor: '#e84118', color: '#e84118' }}>
+              {error}
+            </div>
+          )}
+
           {showAddForm && (
             <div className="expense-form-card card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -299,8 +342,8 @@ export default function Expenses() {
                       <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
                           <AlertCircle size={32} />
-                          <strong>No recorded expenses found</strong>
-                          <span style={{ fontSize: '0.8rem' }}>Try clearing filters or add a new record!</span>
+                          <strong>{isLoading ? 'Loading expenses...' : 'No recorded expenses found'}</strong>
+                          <span style={{ fontSize: '0.8rem' }}>{isLoading ? 'Fetching records from the database.' : 'Try clearing filters or add a new record!'}</span>
                         </div>
                       </td>
                     </tr>

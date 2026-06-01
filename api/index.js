@@ -151,6 +151,15 @@ function normalizePaymentMethod(paymentMethod) {
   return ['Cash', 'UPI', 'Card'].includes(paymentMethod) ? paymentMethod : 'Cash';
 }
 
+function parseExpenseDate(value) {
+  const raw = value || new Date().toISOString().slice(0, 10);
+  const date = new Date(`${raw}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error('Invalid expense date');
+  }
+  return date;
+}
+
 function parseOrderItems(items) {
   if (!Array.isArray(items) || items.length === 0) {
     throw new Error('Order must include at least one item');
@@ -562,6 +571,71 @@ export default async function handler(req, res) {
         return send(res, 200, {
           success: true,
         });
+      }
+
+      return send(res, 405, {
+        error: 'Method not allowed',
+      });
+    }
+
+    /**
+     * =========================================================
+     * EXPENSES
+     * =========================================================
+     */
+    if (path.startsWith('/api/expenses')) {
+      const idPart = path
+        .replace('/api/expenses', '')
+        .replace(/^\//, '');
+
+      const id = idPart ? parseInt(idPart, 10) : null;
+
+      if (method === 'GET') {
+        if (id) {
+          const expense = await prisma.expense.findUnique({ where: { id } });
+          if (!expense) {
+            return send(res, 404, { error: 'Expense not found' });
+          }
+          return send(res, 200, expense);
+        }
+
+        const expenses = await prisma.expense.findMany({
+          orderBy: [
+            { date: 'desc' },
+            { createdAt: 'desc' },
+          ],
+        });
+
+        return send(res, 200, expenses);
+      }
+
+      if (method === 'POST') {
+        const body = await getJsonBody(req);
+        const description = body.description?.trim();
+        const amount = Number(body.amount);
+
+        if (!description) {
+          return send(res, 400, { error: 'Expense description is required' });
+        }
+        if (!Number.isFinite(amount) || amount <= 0) {
+          return send(res, 400, { error: 'Expense amount must be greater than zero' });
+        }
+
+        const created = await prisma.expense.create({
+          data: {
+            description,
+            category: body.category || 'Miscellaneous',
+            amount,
+            date: parseExpenseDate(body.date),
+          },
+        });
+
+        return send(res, 201, created);
+      }
+
+      if (method === 'DELETE' && id) {
+        await prisma.expense.delete({ where: { id } });
+        return send(res, 200, { success: true });
       }
 
       return send(res, 405, {

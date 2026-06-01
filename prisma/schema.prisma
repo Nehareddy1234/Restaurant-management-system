@@ -86,6 +86,16 @@ model GroceryItem {
   purchased Boolean @default(false)
 }
 
+model Expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  category    String
+  amount      Float
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 /**
  * ---------- Store (optional) ----------
  */
