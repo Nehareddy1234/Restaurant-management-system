@@ -3,7 +3,7 @@ import { Plus, Trash2, ToggleLeft, ToggleRight, Check, AlertCircle, Edit } from 
 import { useApp } from '../context/AppContext';
 import './Menu.css';
 
-const CATEGORIES = ['Combos', 'Curries', 'Rotis', 'Rice', 'Drinks', 'Uggani', 'Idli'];
+const CATEGORIES = ['Combos', 'Curries', 'Rotis', 'Rice', 'Drinks', 'Uggani', 'Idli', 'Breakfast'];
 
 export default function Menu() {
   const { menuItems, addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem } = useApp();

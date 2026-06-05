@@ -276,6 +276,7 @@ export default function Analytics() {
     { name: 'Combos', value: 12 },
     { name: 'Rice', value: 10 },
     { name: 'Drinks', value: 18 },
+    { name: 'Breakfast', value: 8 },
   ];
 
   // 5. Prepare Data: Dine-in vs Takeaway
@@ -313,13 +314,13 @@ export default function Analytics() {
   // 7. Prepare Data: Sales by Day of Week (All-Time)
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const dayOfWeekData = {
-    Mon: { name: 'Mon', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
-    Tue: { name: 'Tue', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
-    Wed: { name: 'Wed', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
-    Thu: { name: 'Thu', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
-    Fri: { name: 'Fri', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
-    Sat: { name: 'Sat', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
-    Sun: { name: 'Sun', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0 },
+    Mon: { name: 'Mon', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0, Breakfast: 0 },
+    Tue: { name: 'Tue', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0, Breakfast: 0 },
+    Wed: { name: 'Wed', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0, Breakfast: 0 },
+    Thu: { name: 'Thu', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0, Breakfast: 0 },
+    Fri: { name: 'Fri', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0, Breakfast: 0 },
+    Sat: { name: 'Sat', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0, Breakfast: 0 },
+    Sun: { name: 'Sun', Combos: 0, Curries: 0, Rotis: 0, Rice: 0, Drinks: 0, Breakfast: 0 },
   };
 
   paidOrderHistory.forEach(order => {
@@ -663,6 +664,7 @@ export default function Analytics() {
                 <Bar dataKey="Rotis" stackId="a" fill="#8c7ae6" />
                 <Bar dataKey="Rice" stackId="a" fill="#4cd137" />
                 <Bar dataKey="Drinks" stackId="a" fill="#e1b12c" />
+                <Bar dataKey="Breakfast" stackId="a" fill="#9b59b6" />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -19,7 +19,7 @@ export default function CustomerMenu() {
   const [activeTab, setActiveTab] = useState('menu'); // 'menu' or 'cart' on mobile viewports
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const categories = ['All', ...new Set(menuItems.filter(i => i.enabled !== false).map(i => i.category))];
+  const categories = Array.from(new Set(['All', 'Breakfast', ...menuItems.filter(i => i.enabled !== false).map(i => i.category)]));
 
   const filteredItems = menuItems.filter(item => {
     if (item.enabled === false) return false;

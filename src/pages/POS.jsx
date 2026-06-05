@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import './POS.css';
 
-const categories = ['All', 'Combos', 'Curries', 'Rotis', 'Rice', 'Drinks'];
+const categories = ['All', 'Combos', 'Curries', 'Rotis', 'Rice', 'Drinks', 'Breakfast'];
 
 export default function POS() {
   const { tables, menuItems, placeOrder, activeOrders, updateOrder } = useApp();
