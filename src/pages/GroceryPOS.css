@@ -1,5 +1,9 @@
 /* GroceryPOS.css */
 
+.main-content:has(.grocery-pos-container) {
+  overflow: hidden !important;
+}
+
 .grocery-pos-container {
   display: flex;
   flex-direction: column;

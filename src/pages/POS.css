@@ -1,3 +1,7 @@
+.main-content:has(.pos-container) {
+  overflow: hidden !important;
+}
+
 .pos-container {
   display: flex;
   height: 100%;
