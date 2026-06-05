@@ -424,7 +424,7 @@ export default async function handler(req, res) {
      * MENU
      * =========================================================
      */
-    if (path.startsWith('/api/menu')) {
+    if (path === '/api/menu' || path.startsWith('/api/menu/')) {
       const idPart = path
         .replace('/api/menu', '')
         .replace(/^\//, '');
