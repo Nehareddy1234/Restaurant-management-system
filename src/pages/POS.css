@@ -394,6 +394,70 @@
   border-top: 1px dashed var(--border-color);
 }
 
+/* ---- Parcel Charge Toggle ---- */
+.parcel-charge-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px dashed var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.parcel-charge-toggle:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(232, 65, 24, 0.04);
+}
+
+.parcel-charge-toggle.active {
+  border-color: #00b894;
+  border-style: solid;
+  color: #00a381;
+  background: rgba(0, 184, 148, 0.07);
+}
+
+.parcel-toggle-indicator {
+  margin-left: auto;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--border-color);
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.parcel-toggle-indicator::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.parcel-toggle-indicator.on {
+  background: #00b894;
+}
+
+.parcel-toggle-indicator.on::after {
+  transform: translateX(14px);
+}
+
 .checkout-btn {
   width: 100%;
   padding: 0.875rem;

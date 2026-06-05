@@ -878,7 +878,8 @@ export default async function handler(req, res) {
         const cartItems = parseOrderItems(body.items);
         const enrichedCart = await enrichCartItems(cartItems);
 
-        const total = calcTotal(enrichedCart);
+        const parcelCharge = Number.isFinite(Number(body.parcelCharge)) && Number(body.parcelCharge) > 0 ? Math.round(Number(body.parcelCharge)) : 0;
+        const total = calcTotal(enrichedCart) + parcelCharge;
         const tableId = body.tableId ? Number.parseInt(body.tableId, 10) : null;
 
         const createdWithItems = await prisma.$transaction(async (tx) => {
@@ -968,7 +969,8 @@ export default async function handler(req, res) {
         if (body.items) {
           const cartItems = parseOrderItems(body.items);
           const enrichedCart = await enrichCartItems(cartItems);
-          const total = calcTotal(enrichedCart);
+          const parcelCharge = Number.isFinite(Number(body.parcelCharge)) && Number(body.parcelCharge) > 0 ? Math.round(Number(body.parcelCharge)) : 0;
+          const total = calcTotal(enrichedCart) + parcelCharge;
           const nextTableId = body.tableId !== undefined
             ? (body.tableId ? Number.parseInt(body.tableId, 10) : null)
             : undefined;

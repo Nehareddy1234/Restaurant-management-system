@@ -242,7 +242,7 @@ export function AppProvider({ children }) {
   };
 
   // Place a new order
-  const placeOrder = async (cartItems, tableId, paymentMethod = 'Cash', customerName = '') => {
+  const placeOrder = async (cartItems, tableId, paymentMethod = 'Cash', customerName = '', parcelCharge = 0) => {
     const tempId = `local-${Date.now()}`;
     const optimisticOrder = buildLocalOrder(cartItems, tableId, paymentMethod, customerName, tempId);
     upsertActiveOrder(optimisticOrder);
@@ -257,6 +257,7 @@ export function AppProvider({ children }) {
           tableId: tableId || null,
           paymentMethod,
           customerName,
+          parcelCharge: parcelCharge || 0,
           items: cartItems.map(c => ({
             menuItemId: c.id,
             quantity: c.quantity,
@@ -283,7 +284,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const updateOrder = async (orderId, cartItems, tableId, customerName = undefined) => {
+  const updateOrder = async (orderId, cartItems, tableId, customerName = undefined, parcelCharge = 0) => {
     try {
       const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
         method: 'PUT',
@@ -291,6 +292,7 @@ export function AppProvider({ children }) {
         body: JSON.stringify({
           tableId: tableId || null,
           customerName,
+          parcelCharge: parcelCharge || 0,
           items: cartItems.map(c => ({
             menuItemId: c.id,
             quantity: c.quantity,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Minus, Trash2, ShoppingCart } from 'lucide-react';
+import { Search, Plus, Minus, Trash2, ShoppingCart, Package } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -31,6 +31,9 @@ export default function POS() {
   const [loadedOrderId, setLoadedOrderId] = useState(null);
   const [activeTab, setActiveTab] = useState('menu');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [parcelCharge, setParcelCharge] = useState(false);
+
+  const PARCEL_CHARGE = 30;
 
   // Load existing order when editOrderId changes
   useEffect(() => {
@@ -104,7 +107,8 @@ export default function POS() {
 
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = subtotal + (parcelCharge ? PARCEL_CHARGE : 0);
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0 || isSubmitting) return;
@@ -113,9 +117,9 @@ export default function POS() {
 
     try {
       if (editOrderId) {
-        await updateOrder(editOrderId, cart, tableId, canSetCustomerName ? customerName : undefined);
+        await updateOrder(editOrderId, cart, tableId, canSetCustomerName ? customerName : undefined, parcelCharge ? PARCEL_CHARGE : 0);
       } else {
-        await placeOrder(cart, tableId, 'Cash', canSetCustomerName ? customerName : '');
+        await placeOrder(cart, tableId, 'Cash', canSetCustomerName ? customerName : '', parcelCharge ? PARCEL_CHARGE : 0);
       }
     } catch (err) {
       alert(`Could not place order: ${err.message}`);
@@ -126,6 +130,7 @@ export default function POS() {
     setCart([]);
     setSelectedTable('');
     setCustomerName('');
+    setParcelCharge(false);
     setLoadedOrderId(null);
     setSearchParams({});
     setActiveTab('menu');
@@ -139,6 +144,7 @@ export default function POS() {
     setCart([]);
     setSelectedTable('');
     setCustomerName('');
+    setParcelCharge(false);
     setLoadedOrderId(null);
     setActiveTab('menu');
   };
@@ -297,7 +303,17 @@ export default function POS() {
         </div>
 
         <div className="cart-summary">
-          <div className="summary-row total"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
+          <div className="summary-row"><span>Subtotal</span><span>₹{subtotal.toFixed(0)}</span></div>
+          <button
+            className={`parcel-charge-toggle ${parcelCharge ? 'active' : ''}`}
+            onClick={() => setParcelCharge(p => !p)}
+            type="button"
+          >
+            <Package size={15} />
+            <span>Parcel Charge (₹{PARCEL_CHARGE})</span>
+            <span className={`parcel-toggle-indicator ${parcelCharge ? 'on' : ''}`} />
+          </button>
+          <div className="summary-row total"><span>Total</span><span>₹{total.toFixed(0)}</span></div>
           <div style={{ display: 'flex', gap: '0.5rem', width: '100%', marginTop: '0.25rem' }}>
             {editOrderId && (
               <button
