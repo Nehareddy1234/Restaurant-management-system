@@ -3,9 +3,17 @@ import { Plus, Trash2, ToggleLeft, ToggleRight, Check, AlertCircle, Edit, Tag, C
 import { useApp } from '../context/AppContext';
 import './Menu.css';
 
-const CATEGORY_COLORS = [
-  '#e84393', '#e17055', '#00b894', '#0984e3', '#6c5ce7',
-  '#fdcb6e', '#00cec9', '#d63031', '#a29bfe', '#55efc4'
+const CATEGORY_PALETTE = [
+  { bg: '#ffeef8', border: '#f8b4d9', text: '#c2185b', dot: '#e91e8c' },
+  { bg: '#fff3e0', border: '#ffcc80', text: '#e65100', dot: '#ff6d00' },
+  { bg: '#e8f5e9', border: '#a5d6a7', text: '#2e7d32', dot: '#43a047' },
+  { bg: '#e3f2fd', border: '#90caf9', text: '#1565c0', dot: '#1e88e5' },
+  { bg: '#ede7f6', border: '#ce93d8', text: '#6a1b9a', dot: '#8e24aa' },
+  { bg: '#fff8e1', border: '#ffe082', text: '#f57f17', dot: '#fdd835' },
+  { bg: '#e0f7fa', border: '#80deea', text: '#00695c', dot: '#00acc1' },
+  { bg: '#fce4ec', border: '#f48fb1', text: '#880e4f', dot: '#e91e63' },
+  { bg: '#f3e5f5', border: '#ce93d8', text: '#4a148c', dot: '#9c27b0' },
+  { bg: '#e8f5e9', border: '#80cbc4', text: '#004d40', dot: '#26a69a' },
 ];
 
 export default function Menu() {
@@ -47,12 +55,9 @@ export default function Menu() {
     e.preventDefault();
     setError('');
     setSuccess('');
-
     if (!name.trim()) { setError('Item name is required.'); return; }
     if (!price || parseFloat(price) <= 0) { setError('Please enter a valid price greater than 0.'); return; }
-
     const imageUrl = image.trim() || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200';
-
     try {
       if (editingItem) {
         await updateMenuItem(editingItem.id, { name: name.trim(), category, price: parseFloat(price), image: imageUrl });
@@ -62,9 +67,7 @@ export default function Menu() {
         await addMenuItem({ name: name.trim(), category, price: parseFloat(price), image: imageUrl });
         setSuccess('Menu item added successfully!');
       }
-      setName('');
-      setPrice('');
-      setImage('');
+      setName(''); setPrice(''); setImage('');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(`Failed to save item: ${err.message}`);
@@ -82,7 +85,11 @@ export default function Menu() {
     }
   };
 
-  const getCategoryColor = (index) => CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+  const getPalette = (index) => CATEGORY_PALETTE[index % CATEGORY_PALETTE.length];
+  const getCatPalette = (catName) => {
+    const idx = foodCategories.findIndex(c => c.name === catName);
+    return getPalette(idx >= 0 ? idx : 0);
+  };
 
   return (
     <div className="menu-management-page">
@@ -91,167 +98,119 @@ export default function Menu() {
           <h1>Menu Management</h1>
           <p className="text-muted">Manage restaurant dishes, add new items, or enable/disable them</p>
         </div>
-        <button
-          className={`cat-manager-toggle-btn ${showCategoryManager ? 'active' : ''}`}
-          onClick={() => setShowCategoryManager(!showCategoryManager)}
-        >
-          <Tag size={16} />
-          <span>Categories</span>
-          <span className="cat-count-badge">{foodCategories.length}</span>
-          {showCategoryManager ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
       </header>
 
-      {/* Category Manager Panel */}
-      {showCategoryManager && (
-        <div className="category-manager-panel">
-          <div className="cat-panel-header">
-            <div className="cat-panel-title">
-              <Tag size={18} />
-              <h2>Food Categories</h2>
-              <span className="cat-panel-subtitle">Add or remove menu categories</span>
-            </div>
-          </div>
-
-          <div className="cat-panel-body">
-            <form onSubmit={handleAddCategory} className="cat-add-form">
-              <div className="cat-input-wrapper">
-                <Plus size={16} className="cat-input-icon" />
-                <input
-                  type="text"
-                  placeholder="Type new category name…"
-                  value={newCategoryName}
-                  onChange={e => setNewCategoryName(e.target.value)}
-                  required
-                  className="cat-input"
-                />
-              </div>
-              <button type="submit" className="cat-add-btn">
-                Add Category
-              </button>
-            </form>
-            {catError && (
-              <div className="cat-error">
-                <AlertCircle size={14} /> {catError}
-              </div>
-            )}
-
-            <div className="cat-pills-grid">
-              {foodCategories.length === 0 ? (
-                <p className="cat-empty">No categories yet. Add one above!</p>
-              ) : (
-                foodCategories.map((cat, index) => (
-                  <div
-                    key={cat.id}
-                    className="cat-pill"
-                    style={{ '--cat-color': getCategoryColor(index) }}
-                  >
-                    <span className="cat-pill-dot" />
-                    <span className="cat-pill-name">{cat.name}</span>
-                    <button
-                      type="button"
-                      className="cat-pill-delete"
-                      onClick={() => {
-                        if (window.confirm(`Delete category "${cat.name}"?`)) removeFoodCategory(cat.id);
-                      }}
-                      title={`Delete ${cat.name}`}
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="menu-management-content">
-        {/* Add / Edit Dish Form */}
-        <div className="add-item-card card">
-          <h2>{editingItem ? 'Edit Dish' : 'Add New Dish'}</h2>
-          <form onSubmit={handleSubmit} className="add-item-form">
-            {error && (
-              <div className="form-error">
-                <AlertCircle size={16} />
-                <span>{error}</span>
-              </div>
-            )}
-            {success && (
-              <div className="form-success">
-                <Check size={16} />
-                <span>{success}</span>
-              </div>
-            )}
+        <div className="menu-sidebar">
+          {/* Add / Edit Form */}
+          <div className="add-item-card card">
+            <h2>{editingItem ? 'Edit Dish' : 'Add New Dish'}</h2>
+            <form onSubmit={handleSubmit} className="add-item-form">
+              {error && <div className="form-error"><AlertCircle size={16} /><span>{error}</span></div>}
+              {success && <div className="form-success"><Check size={16} /><span>{success}</span></div>}
 
-            <div className="form-group">
-              <label htmlFor="item-name">Dish Name *</label>
-              <input
-                id="item-name"
-                type="text"
-                placeholder="e.g. Garlic Naan"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-row">
               <div className="form-group">
-                <label htmlFor="item-category">Category *</label>
-                <select
-                  id="item-category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="">Select a category</option>
-                  {foodCategories.map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
+                <label htmlFor="item-name">Dish Name *</label>
+                <input id="item-name" type="text" placeholder="e.g. Garlic Naan" value={name} onChange={e => setName(e.target.value)} required />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="item-category">Category *</label>
+                  <select id="item-category" value={category} onChange={e => setCategory(e.target.value)}>
+                    <option value="">Select a category</option>
+                    {foodCategories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="item-price">Price (₹) *</label>
+                  <input id="item-price" type="number" placeholder="e.g. 50" value={price} onChange={e => setPrice(e.target.value)} min="0" step="0.01" required />
+                </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="item-price">Price (₹) *</label>
-                <input
-                  id="item-price"
-                  type="number"
-                  placeholder="e.g. 50"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  min="0"
-                  step="0.01"
-                  required
-                />
+                <label htmlFor="item-image">Image URL (Optional)</label>
+                <input id="item-image" type="url" placeholder="https://example.com/dish.jpg" value={image} onChange={e => setImage(e.target.value)} />
+                <span className="helper-text">Leaves default placeholder if empty</span>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="item-image">Image URL (Optional)</label>
-              <input
-                id="item-image"
-                type="url"
-                placeholder="https://example.com/dish.jpg"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-              />
-              <span className="helper-text">Leaves default placeholder if empty</span>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <button type="submit" className="btn btn-primary submit-btn" style={{ flex: 1, marginTop: 0 }}>
-                {editingItem ? <Check size={18} /> : <Plus size={18} />} {editingItem ? 'Save Changes' : 'Add to Menu'}
-              </button>
-              {editingItem && (
-                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={handleCancelEdit}>
-                  Cancel
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <button type="submit" className="btn btn-primary submit-btn" style={{ flex: 1, marginTop: 0 }}>
+                  {editingItem ? <Check size={18} /> : <Plus size={18} />} {editingItem ? 'Save Changes' : 'Add to Menu'}
                 </button>
-              )}
+                {editingItem && (
+                  <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={handleCancelEdit}>Cancel</button>
+                )}
+              </div>
+            </form>
+          </div>
+
+          {/* Category Manager Card */}
+          <div className="category-manager-card card">
+            <div className="cat-card-header">
+              <Tag size={17} />
+              <h2>Manage Food Categories</h2>
             </div>
-          </form>
+            
+            <div className="cat-card-body">
+              <form onSubmit={handleAddCategory} className="cat-add-form">
+                <div className="cat-input-wrapper">
+                  <Plus size={15} className="cat-input-icon" />
+                  <input
+                    type="text"
+                    placeholder="New category name…"
+                    value={newCategoryName}
+                    onChange={e => setNewCategoryName(e.target.value)}
+                    required
+                    className="cat-input"
+                  />
+                </div>
+                <button type="submit" className="cat-add-btn">
+                  Add
+                </button>
+              </form>
+
+              {catError && (
+                <div className="cat-error-msg">
+                  <AlertCircle size={14} /> {catError}
+                </div>
+              )}
+
+              <div className="cat-pills-grid">
+                {foodCategories.length === 0 ? (
+                  <p className="cat-empty-text">No categories yet.</p>
+                ) : (
+                  foodCategories.map((cat, index) => {
+                    const palette = getPalette(index);
+                    return (
+                      <div
+                        key={cat.id}
+                        className="cat-pill"
+                        style={{ background: palette.bg, borderColor: palette.border, color: palette.text }}
+                      >
+                        <span className="cat-pill-dot" style={{ background: palette.dot }} />
+                        <span className="cat-pill-name">{cat.name}</span>
+                        <button
+                          type="button"
+                          className="cat-pill-delete"
+                          style={{ color: palette.text }}
+                          onClick={() => { if (window.confirm(`Delete category "${cat.name}"?`)) removeFoodCategory(cat.id); }}
+                          title={`Delete ${cat.name}`}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Menu Items List */}
+        {/* Dishes List */}
         <div className="items-list-card card">
           <h2>Current Dishes ({menuItems.length})</h2>
           <div className="items-table-container">
@@ -259,79 +218,52 @@ export default function Menu() {
               <p className="empty-msg">No dishes in the menu. Add one above!</p>
             ) : (
               <>
-                {/* Desktop Table View */}
                 <table className="menu-items-table desktop-table">
                   <thead>
                     <tr>
-                      <th>Dish</th>
-                      <th>Category</th>
-                      <th>Price</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th>Dish</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {menuItems.map((item, index) => (
-                      <tr key={item.id} className={item.enabled ? '' : 'item-disabled'}>
-                        <td>
-                          <div className="table-dish-info">
-                            <div className="dish-img" style={{ backgroundImage: `url("${item.image}"), url("https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200")` }}></div>
-                            <div className="dish-details">
+                    {menuItems.map(item => {
+                      const pal = getCatPalette(item.category);
+                      return (
+                        <tr key={item.id} className={item.enabled ? '' : 'item-disabled'}>
+                          <td>
+                            <div className="table-dish-info">
+                              <div className="dish-img" style={{ backgroundImage: `url("${item.image}"), url("https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200")` }} />
                               <span className="dish-name">{item.name}</span>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span
-                            className="dish-category-badge"
-                            style={{
-                              '--cat-color': getCategoryColor(foodCategories.findIndex(c => c.name === item.category)),
-                            }}
-                          >
-                            {item.category}
-                          </span>
-                        </td>
-                        <td>
-                          <strong className="dish-price">₹{item.price}</strong>
-                        </td>
-                        <td>
-                          <button
-                            className={`status-toggle-btn ${item.enabled ? 'enabled' : 'disabled'}`}
-                            onClick={() => toggleMenuItemEnabled(item.id)}
-                            title={item.enabled ? 'Click to Disable' : 'Click to Enable'}
-                          >
-                            {item.enabled ? (
-                              <><ToggleRight size={24} color="var(--success)" /><span className="status-text">Active</span></>
-                            ) : (
-                              <><ToggleLeft size={24} color="var(--text-muted)" /><span className="status-text">Disabled</span></>
-                            )}
-                          </button>
-                        </td>
-                        <td>
-                          <div className="dish-actions">
-                            <button className="edit-dish-btn" onClick={() => handleStartEdit(item)} title="Edit Dish">
-                              <Edit size={16} />
+                          </td>
+                          <td>
+                            <span className="dish-category-badge" style={{ background: pal.bg, borderColor: pal.border, color: pal.text }}>
+                              {item.category}
+                            </span>
+                          </td>
+                          <td><strong className="dish-price">₹{item.price}</strong></td>
+                          <td>
+                            <button className={`status-toggle-btn ${item.enabled ? 'enabled' : 'disabled'}`} onClick={() => toggleMenuItemEnabled(item.id)}>
+                              {item.enabled
+                                ? <><ToggleRight size={24} color="var(--success)" /><span className="status-text">Active</span></>
+                                : <><ToggleLeft size={24} color="var(--text-muted)" /><span className="status-text">Disabled</span></>}
                             </button>
-                            <button
-                              className="delete-dish-btn"
-                              onClick={async () => {
-                                if (window.confirm(`Are you sure you want to delete ${item.name}?`)) {
-                                  try { await removeMenuItem(item.id); }
-                                  catch (err) { setError(`Failed to remove item: ${err.message}`); }
+                          </td>
+                          <td>
+                            <div className="dish-actions">
+                              <button className="edit-dish-btn" onClick={() => handleStartEdit(item)} title="Edit"><Edit size={16} /></button>
+                              <button className="delete-dish-btn" title="Delete" onClick={async () => {
+                                if (window.confirm(`Delete ${item.name}?`)) {
+                                  try { await removeMenuItem(item.id); } catch (err) { setError(`Failed: ${err.message}`); }
                                 }
-                              }}
-                              title="Remove from Menu"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              }}><Trash2 size={16} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
 
-                {/* Mobile Card View */}
                 <div className="mobile-items-list">
                   {menuItems.map(item => (
                     <div key={item.id} className={`mobile-item-card ${item.enabled ? '' : 'item-disabled'}`}>
@@ -349,8 +281,7 @@ export default function Menu() {
                         <button className="edit-dish-btn" onClick={() => handleStartEdit(item)}><Edit size={16} /></button>
                         <button className="delete-dish-btn" onClick={async () => {
                           if (window.confirm(`Delete ${item.name}?`)) {
-                            try { await removeMenuItem(item.id); }
-                            catch (err) { setError(`Failed: ${err.message}`); }
+                            try { await removeMenuItem(item.id); } catch (err) { setError(`Failed: ${err.message}`); }
                           }
                         }}><Trash2 size={16} /></button>
                       </div>
