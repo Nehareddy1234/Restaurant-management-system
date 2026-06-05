@@ -33,7 +33,7 @@ export default function POS() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [parcelCharge, setParcelCharge] = useState(false);
 
-  const PARCEL_CHARGE = 30;
+  const PARCEL_CHARGE = 10;
 
   // Load existing order when editOrderId changes
   useEffect(() => {
