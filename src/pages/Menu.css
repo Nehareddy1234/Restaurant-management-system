@@ -278,6 +278,8 @@
   outline: none;
   background: white;
   transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
