@@ -735,6 +735,22 @@ export default async function handler(req, res) {
         return send(res, 200, { success: true });
       }
 
+      if (method === 'PUT' && id) {
+        const body = await getJsonBody(req);
+        
+        const updated = await prisma.expense.update({
+          where: { id },
+          data: {
+            description: body.description !== undefined ? body.description.trim() : undefined,
+            category: body.category !== undefined ? body.category : undefined,
+            amount: body.amount !== undefined ? Number(body.amount) : undefined,
+            date: body.date !== undefined ? parseExpenseDate(body.date) : undefined,
+          },
+        });
+
+        return send(res, 200, updated);
+      }
+
       return send(res, 405, {
         error: 'Method not allowed',
       });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChefHat, CheckCircle, Clock, Printer, Edit, RefreshCw } from 'lucide-react';
+import { ChefHat, CheckCircle, Clock, Printer, Edit, RefreshCw, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import './Orders.css';
@@ -10,7 +10,7 @@ const statusConfig = {
 };
 
 export default function Orders() {
-  const { activeOrders, markOrderReady, closeOrder, refreshData } = useApp();
+  const { activeOrders, markOrderReady, closeOrder, deleteOrder, refreshData } = useApp();
   const [dialogOrderId, setDialogOrderId] = useState(null);
   const [closingOrderId, setClosingOrderId] = useState(null);
   const navigate = useNavigate();
@@ -26,6 +26,16 @@ export default function Orders() {
       alert(`Could not close order: ${err.message}`);
     } finally {
       setClosingOrderId(null);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (window.confirm('Are you sure you want to permanently delete this order?')) {
+      try {
+        await deleteOrder(orderId);
+      } catch (err) {
+        alert(`Could not delete order: ${err.message}`);
+      }
     }
   };
 
@@ -78,6 +88,9 @@ export default function Orders() {
                 <div className="order-actions">
                   <button className="btn btn-outline" onClick={() => navigate(`/pos?edit=${encodeURIComponent(order.id)}`)}>
                     <Edit size={15} /> Edit
+                  </button>
+                  <button className="btn btn-outline" style={{ color: '#d63031', borderColor: '#d63031' }} onClick={() => handleDeleteOrder(order.id)}>
+                    <Trash2 size={15} /> Delete
                   </button>
 
                   {order.status === 'Preparing' && (

@@ -412,6 +412,28 @@ export function AppProvider({ children }) {
     }
   };
 
+  const deleteOrder = async (orderId) => {
+    const order = activeOrders.find(o => o.id === orderId);
+    if (order) {
+      setActiveOrders(prev => prev.filter(o => o.id !== orderId));
+      setTables(prev => prev.map(t => t.order?.id === orderId ? { ...t, status: 'available', order: null } : t));
+
+      try {
+        const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.details || err.error || `Failed to delete order (${res.status})`);
+        }
+      } catch (e) {
+        console.error('deleteOrder API error', e);
+        await refreshData();
+        throw e;
+      }
+    }
+  };
+
   const settlePayLaterOrder = async (orderId, paymentMethod) => {
     const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
       method: 'PUT',
@@ -633,7 +655,7 @@ export function AppProvider({ children }) {
       appMode, setAppMode,
       tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, dataErrors,
       refreshData,
-      placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, updateOrderItemQuantity, markOrderReady, closeOrder, freeTable, updateTableStatus,
+      placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, updateOrderItemQuantity, markOrderReady, closeOrder, deleteOrder, freeTable, updateTableStatus,
       addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
       addStoreItem, updateStoreItemStock, checkoutStoreOrder,

@@ -9,7 +9,8 @@ import {
   Tag,
   TrendingDown,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Edit2
 } from 'lucide-react';
 import './Expenses.css';
 
@@ -23,6 +24,7 @@ const CATEGORIES = [
   { name: 'Salaries', color: '#6c5ce7', bg: 'rgba(108, 92, 231, 0.15)' },
   { name: 'Marketing', color: '#fdcb6e', bg: 'rgba(253, 203, 110, 0.15)' },
   { name: 'Miscellaneous', color: '#b2bec3', bg: 'rgba(178, 190, 195, 0.15)' },
+  { name: 'Pipes', color: '#e17055', bg: 'rgba(225, 112, 85, 0.15)' },
 ];
 
 function getIstDateInputValue(value = new Date()) {
@@ -60,6 +62,7 @@ export default function Expenses() {
   const [category, setCategory] = useState('Ingredients');
   const [date, setDate] = useState(() => getIstDateInputValue());
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editId, setEditId] = useState(null);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,14 +95,38 @@ export default function Expenses() {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Handle Add
+  const resetForm = () => {
+    setDescription('');
+    setAmount('');
+    setCategory('Ingredients');
+    setDate(getIstDateInputValue());
+    setShowAddForm(false);
+    setEditId(null);
+    setError('');
+  };
+
+  const handleEditClick = (exp) => {
+    setDescription(exp.description);
+    setAmount(exp.amount.toString());
+    setCategory(exp.category);
+    setDate(getIstDateInputValue(new Date(exp.date)));
+    setEditId(exp.id);
+    setShowAddForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle Add / Update
   const handleAddExpense = async (e) => {
     e.preventDefault();
     if (!description.trim() || !amount || parseFloat(amount) <= 0) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/expenses`, {
-        method: 'POST',
+      const isEdit = !!editId;
+      const url = isEdit ? `${API_BASE}/api/expenses/${editId}` : `${API_BASE}/api/expenses`;
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           description: description.trim(),
@@ -115,13 +142,12 @@ export default function Expenses() {
       }
 
       const savedExpense = await res.json();
-      setExpenses(prev => [savedExpense, ...prev.filter(exp => exp.id !== savedExpense.id)]);
-      setDescription('');
-      setAmount('');
-      setCategory('Ingredients');
-      setDate(getIstDateInputValue());
-      setShowAddForm(false);
-      setError('');
+      if (isEdit) {
+        setExpenses(prev => prev.map(exp => exp.id === savedExpense.id ? savedExpense : exp));
+      } else {
+        setExpenses(prev => [savedExpense, ...prev]);
+      }
+      resetForm();
     } catch (err) {
       console.error('Failed to save expense', err);
       setError(err.message);
@@ -179,7 +205,7 @@ export default function Expenses() {
           <h1>Expenses Management</h1>
           <p className="text-muted">Track store expenditures, bills, and resource allocations</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
+        <button className="btn btn-primary" onClick={() => { resetForm(); setShowAddForm(true); }}>
           <Plus size={18} style={{ marginRight: '0.4rem' }} /> Add Expense
         </button>
       </header>
@@ -270,8 +296,8 @@ export default function Expenses() {
           {showAddForm && (
             <div className="expense-form-card card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ margin: 0 }}>Add New Expense</h3>
-                <button className="close-btn" onClick={() => setShowAddForm(false)}>&times;</button>
+                <h3 style={{ margin: 0 }}>{editId ? 'Edit Expense' : 'Add New Expense'}</h3>
+                <button className="close-btn" onClick={resetForm}>&times;</button>
               </div>
               <form onSubmit={handleAddExpense} className="expense-form">
                 <div className="form-group">
@@ -315,8 +341,8 @@ export default function Expenses() {
                   />
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-                  <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Save Record</button>
-                  <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowAddForm(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{editId ? 'Update Record' : 'Save Record'}</button>
+                  <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={resetForm}>Cancel</button>
                 </div>
               </form>
             </div>
@@ -400,7 +426,10 @@ export default function Expenses() {
                             - ₹{exp.amount.toLocaleString('en-IN')}
                           </td>
                           <td style={{ textAlign: 'center' }}>
-                            <button className="delete-action-btn" onClick={() => handleDeleteExpense(exp.id)}>
+                            <button className="edit-action-btn" onClick={() => handleEditClick(exp)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#0984e3', cursor: 'pointer' }} title="Edit Expense">
+                              <Edit2 size={15} />
+                            </button>
+                            <button className="delete-action-btn" onClick={() => handleDeleteExpense(exp.id)} title="Delete Expense">
                               <Trash2 size={15} />
                             </button>
                           </td>
