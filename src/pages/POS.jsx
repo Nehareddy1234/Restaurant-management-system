@@ -14,7 +14,6 @@ export default function POS() {
 
   const categories = ['All', ...foodCategories.map(c => c.name)];
 
-  // Robust parsing: extract editOrderId using standard searchParams with a direct window.location fallback for unencoded '#' hash tags
   let editOrderId = searchParams.get('edit');
   if (!editOrderId) {
     const match = window.location.href.match(/[?&]edit=([^&]+)/);
@@ -30,7 +29,7 @@ export default function POS() {
   const [customerName, setCustomerName] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [loadedOrderId, setLoadedOrderId] = useState(null);
-  const [activeTab, setActiveTab] = useState('menu'); // 'menu' or 'cart' for mobile viewports
+  const [activeTab, setActiveTab] = useState('menu');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load existing order when editOrderId changes
@@ -39,54 +38,34 @@ export default function POS() {
       if (loadedOrderId !== editOrderId) {
         const order = activeOrders.find(o => o.id === editOrderId);
         if (order) {
-          // Reconstruct cart
           const reconstructedCart = [];
           (order.itemList || []).forEach(itemStr => {
             const match = itemStr.match(/(.+) x(\d+)$/);
             if (match) {
               const fullName = match[1];
               const qty = parseInt(match[2], 10);
-              
               const cleanName = fullName.replace(/\s*\([^)]+\)/g, '').trim();
-              
-              const addOns = { Roti: 0, Curry: 0 };
-              const addOnMatch = fullName.match(/\(([^)]+)\)/);
-              if (addOnMatch) {
-                const parts = addOnMatch[1].split(',').map(p => p.trim());
-                parts.forEach(part => {
-                  const rotiMatch = part.match(/([+-]\d+)\s*Rotis?/i);
-                  if (rotiMatch) addOns.Roti = parseInt(rotiMatch[1], 10);
-                  const curryMatch = part.match(/([+-]\d+)\s*Curries?/i);
-                  if (curryMatch) addOns.Curry = parseInt(curryMatch[1], 10);
-                  const currySingularMatch = part.match(/([+-]\d+)\s*Curry/i);
-                  if (currySingularMatch && !curryMatch) addOns.Curry = parseInt(currySingularMatch[1], 10);
-                });
-              }
-              
               const menuItem = menuItems.find(item => item.name === cleanName);
               if (menuItem) {
-                reconstructedCart.push({ ...menuItem, quantity: qty, addOns: menuItem.category === 'Combos' ? addOns : null });
+                reconstructedCart.push({ ...menuItem, quantity: qty });
               }
             }
           });
           setCart(reconstructedCart);
           setCustomerName(order.customerName || '');
 
-          // order.table is a string like "Table T1" or "Takeaway" (from backend mapOrder)
           if (order.table && order.table.startsWith('Table ')) {
-            // Find the matching table by name: "Table T1" → name "T1"
-            const tableName = order.table.replace('Table ', ''); // e.g. "T1"
+            const tableName = order.table.replace('Table ', '');
             const matchingTable = tables.find(t => t.name === tableName);
             setSelectedTable(matchingTable ? String(matchingTable.id) : '');
           } else {
             setSelectedTable('');
           }
           setLoadedOrderId(editOrderId);
-          setActiveTab('menu'); // Automatically open Menu tab when editing an order
+          setActiveTab('menu');
         }
       }
     } else if (loadedOrderId) {
-      // Clear out if we navigated away from editing
       setCart([]);
       setSelectedTable('');
       setCustomerName('');
@@ -94,9 +73,7 @@ export default function POS() {
     }
   }, [editOrderId, activeOrders, menuItems, loadedOrderId]);
 
-  // When editing, allow the currently assigned table in addition to available ones
   const availableTables = tables.filter(t => t.status === 'available' || (editOrderId && t.order?.id === editOrderId));
-
   const enabledItems = menuItems.filter(item => item.enabled);
 
   const filteredItems = enabledItems.filter(item => {
@@ -109,8 +86,7 @@ export default function POS() {
     setCart(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
-      const defaultAddOns = item.category === 'Combos' ? { Roti: 0, Curry: 0 } : null;
-      return [...prev, { ...item, quantity: 1, addOns: defaultAddOns }];
+      return [...prev, { ...item, quantity: 1 }];
     });
   };
 
@@ -126,28 +102,9 @@ export default function POS() {
     );
   };
 
-  const updateCartAddOn = (itemId, addOnKey, delta) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === itemId) {
-        const currentAddOns = item.addOns || { Roti: 0, Curry: 0 };
-        return {
-          ...item,
-          addOns: {
-            ...currentAddOns,
-            [addOnKey]: (currentAddOns[addOnKey] || 0) + delta
-          }
-        };
-      }
-      return item;
-    }));
-  };
-
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
 
-  const total = cart.reduce((sum, item) => {
-    const addOnPrice = ((item.addOns?.Roti || 0) * 15) + ((item.addOns?.Curry || 0) * 40);
-    return sum + (item.price + addOnPrice) * item.quantity;
-  }, 0);
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0 || isSubmitting) return;
@@ -194,7 +151,7 @@ export default function POS() {
         </div>
       )}
 
-      {/* Mobile Tab Switched Navigation */}
+      {/* Mobile Tab Navigation */}
       <div className="pos-mobile-tabs">
         <button 
           className={`pos-mobile-tab ${activeTab === 'menu' ? 'active' : ''}`}
@@ -315,9 +272,7 @@ export default function POS() {
             </div>
           ) : (
             cart.map(item => {
-              const addOnPrice = ((item.addOns?.Roti || 0) * 15) + ((item.addOns?.Curry || 0) * 40);
-              const itemTotalPrice = (item.price + addOnPrice) * item.quantity;
-              const isCombo = item.category === 'Combos';
+              const itemTotalPrice = item.price * item.quantity;
 
               return (
                 <div key={item.id} className="cart-item" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
@@ -335,50 +290,6 @@ export default function POS() {
                       <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); removeFromCart(item.id); }} className="delete-btn"><Trash2 size={14} /></button>
                     </div>
                   </div>
-                  
-                  {isCombo && (
-                    <div style={{ display: 'flex', gap: '1rem', paddingLeft: '0.5rem', borderLeft: '2px solid var(--primary)', marginTop: '0.1rem' }}>
-                      {/* Roti add-on */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        <span>Roti (₹15):</span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); e.preventDefault(); updateCartAddOn(item.id, 'Roti', -1); }}
-                          style={{ border: 'none', background: 'var(--bg-color)', borderRadius: '4px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
-                        >
-                          -
-                        </button>
-                        <strong style={{ minWidth: '16px', textAlign: 'center', color: (item.addOns?.Roti || 0) !== 0 ? 'var(--primary)' : 'var(--text-muted)' }}>
-                          {(item.addOns?.Roti || 0) > 0 ? `+${item.addOns.Roti}` : (item.addOns?.Roti || 0)}
-                        </strong>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); e.preventDefault(); updateCartAddOn(item.id, 'Roti', 1); }}
-                          style={{ border: 'none', background: 'var(--bg-color)', borderRadius: '4px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
-                        >
-                          +
-                        </button>
-                      </div>
-                      
-                      {/* Curry add-on */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        <span>Curry (₹40):</span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); e.preventDefault(); updateCartAddOn(item.id, 'Curry', -1); }}
-                          style={{ border: 'none', background: 'var(--bg-color)', borderRadius: '4px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
-                        >
-                          -
-                        </button>
-                        <strong style={{ minWidth: '16px', textAlign: 'center', color: (item.addOns?.Curry || 0) !== 0 ? 'var(--primary)' : 'var(--text-muted)' }}>
-                          {(item.addOns?.Curry || 0) > 0 ? `+${item.addOns.Curry}` : (item.addOns?.Curry || 0)}
-                        </strong>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); e.preventDefault(); updateCartAddOn(item.id, 'Curry', 1); }}
-                          style={{ border: 'none', background: 'var(--bg-color)', borderRadius: '4px', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })
@@ -409,7 +320,7 @@ export default function POS() {
         </div>
       </div>
 
-      {/* Floating View Cart Button (Mobile Menu Tab Only) */}
+      {/* Floating View Cart Button (Mobile Only) */}
       {activeTab === 'menu' && cart.length > 0 && (
         <button className="floating-cart-btn" onClick={() => setActiveTab('cart')}>
           <ShoppingCart size={20} />
