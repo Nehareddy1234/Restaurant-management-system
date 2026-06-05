@@ -83,10 +83,11 @@ export default function Menu() {
     }
   };
 
-  const handleAddCategory = (e) => {
+  const handleAddCategory = async (e) => {
     e.preventDefault();
+    setError('');
     try {
-      addFoodCategory(newCategoryName);
+      await addFoodCategory(newCategoryName);
       setNewCategoryName('');
       setSuccess('Category added!');
       setTimeout(() => setSuccess(''), 2000);
