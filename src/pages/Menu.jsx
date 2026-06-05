@@ -3,18 +3,19 @@ import { Plus, Trash2, ToggleLeft, ToggleRight, Check, AlertCircle, Edit } from 
 import { useApp } from '../context/AppContext';
 import './Menu.css';
 
-const CATEGORIES = ['Combos', 'Curries', 'Rotis', 'Rice', 'Drinks', 'Uggani', 'Idli', 'Breakfast'];
-
 export default function Menu() {
-  const { menuItems, addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem } = useApp();
+  const { menuItems, addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, foodCategories, addFoodCategory, removeFoodCategory } = useApp();
 
   const [name, setName] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState(foodCategories?.[0]?.name || '');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingItem, setEditingItem] = useState(null);
+  
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const handleStartEdit = (item) => {
     setEditingItem(item);
@@ -29,7 +30,7 @@ export default function Menu() {
   const handleCancelEdit = () => {
     setEditingItem(null);
     setName('');
-    setCategory(CATEGORIES[0]);
+    setCategory(foodCategories?.[0]?.name || '');
     setPrice('');
     setImage('');
     setError('');
@@ -82,6 +83,18 @@ export default function Menu() {
     }
   };
 
+  const handleAddCategory = (e) => {
+    e.preventDefault();
+    try {
+      addFoodCategory(newCategoryName);
+      setNewCategoryName('');
+      setSuccess('Category added!');
+      setTimeout(() => setSuccess(''), 2000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="menu-management-page">
       <header className="menu-management-header">
@@ -92,6 +105,41 @@ export default function Menu() {
       </header>
 
       <div className="menu-management-content">
+        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
+          <button className="btn btn-outline" onClick={() => setShowCategoryManager(!showCategoryManager)}>
+            {showCategoryManager ? 'Hide Categories' : 'Manage Food Categories'}
+          </button>
+        </div>
+
+        {showCategoryManager && (
+          <div className="add-item-card card" style={{ marginBottom: '1rem' }}>
+            <h2>Manage Categories</h2>
+            <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <input 
+                type="text" 
+                placeholder="New Category Name" 
+                value={newCategoryName} 
+                onChange={e => setNewCategoryName(e.target.value)} 
+                required 
+                style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+              />
+              <button type="submit" className="btn btn-primary" style={{ margin: 0, whiteSpace: 'nowrap' }}><Plus size={16}/> Add</button>
+            </form>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {foodCategories.map(cat => (
+                <div key={cat.id} className="dish-category-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.8rem', background: '#f1f2f6', border: '1px solid #dcdde1', color: '#2f3640', fontSize: '0.9rem', borderRadius: '20px' }}>
+                  {cat.name}
+                  <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d63031', padding: 0, display: 'flex' }} onClick={() => {
+                      if (window.confirm(`Delete category "${cat.name}"?`)) removeFoodCategory(cat.id);
+                    }}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Add Item Form */}
         <div className="add-item-card card">
           <h2>{editingItem ? 'Edit Dish' : 'Add New Dish'}</h2>
@@ -129,8 +177,9 @@ export default function Menu() {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                  <option value="">Select a category</option>
+                  {foodCategories.map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
               </div>

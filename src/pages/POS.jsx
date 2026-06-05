@@ -5,14 +5,14 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import './POS.css';
 
-const categories = ['All', 'Combos', 'Curries', 'Rotis', 'Rice', 'Drinks', 'Breakfast'];
-
 export default function POS() {
-  const { tables, menuItems, placeOrder, activeOrders, updateOrder } = useApp();
+  const { tables, menuItems, placeOrder, activeOrders, updateOrder, foodCategories } = useApp();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const canSetCustomerName = ['admin', 'account_manager'].includes(currentUser?.role);
+
+  const categories = ['All', ...foodCategories.map(c => c.name)];
 
   // Robust parsing: extract editOrderId using standard searchParams with a direct window.location fallback for unencoded '#' hash tags
   let editOrderId = searchParams.get('edit');

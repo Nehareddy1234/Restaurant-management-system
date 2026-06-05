@@ -520,6 +520,68 @@ export default async function handler(req, res) {
 
     /**
      * =========================================================
+     * MENU CATEGORIES
+     * =========================================================
+     */
+    if (path.startsWith('/api/menu-categories')) {
+      const idPart = path
+        .replace('/api/menu-categories', '')
+        .replace(/^\//, '');
+
+      const id = idPart ? parseInt(idPart) : null;
+
+      if (method === 'GET') {
+        const categoriesCount = await prisma.menuCategory.count();
+        if (categoriesCount === 0) {
+          const defaultCategories = ['Combos', 'Curries', 'Rotis', 'Rice', 'Drinks', 'Uggani', 'Idli', 'Breakfast'];
+          await prisma.menuCategory.createMany({
+            data: defaultCategories.map(name => ({ name })),
+            skipDuplicates: true,
+          });
+        }
+        
+        const categories = await prisma.menuCategory.findMany({
+          orderBy: { id: 'asc' },
+        });
+
+        return send(res, 200, categories);
+      }
+
+      if (method === 'POST') {
+        const body = await getJsonBody(req);
+        if (!body.name || !body.name.trim()) {
+           return send(res, 400, { error: 'Category name is required' });
+        }
+        
+        try {
+          const created = await prisma.menuCategory.create({
+            data: { name: body.name.trim() },
+          });
+          return send(res, 201, created);
+        } catch (error) {
+          if (error.code === 'P2002') {
+             return send(res, 400, { error: 'Category already exists' });
+          }
+          throw error;
+        }
+      }
+
+      if (method === 'DELETE' && id) {
+        const cat = await prisma.menuCategory.findUnique({ where: { id }});
+        if (!cat) return send(res, 404, { error: 'Category not found' });
+        
+        await prisma.menuCategory.delete({
+          where: { id },
+        });
+
+        return send(res, 200, { success: true });
+      }
+
+      return send(res, 405, { error: 'Method not allowed' });
+    }
+
+    /**
+     * =========================================================
      * TABLES
      * =========================================================
      */

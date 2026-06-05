@@ -82,6 +82,7 @@ export function AppProvider({ children }) {
   const [activeOrders, setActiveOrders] = useState([]);
   const [orderHistory, setOrderHistory] = useState([]);
   const [menuItems, setMenuItems] = useState(initialMenuItems);
+  const [foodCategories, setFoodCategories] = useState([]);
   const [groceryItems, setGroceryItems] = useState([]);
   const [storeInventory, setStoreInventory] = useState([]);
   const [storeOrders, setStoreOrders] = useState([]);
@@ -97,6 +98,7 @@ export function AppProvider({ children }) {
       ['tables', `${API_BASE}/api/tables`],
       ['orders', `${API_BASE}/api/orders`],
       ['grocery', `${API_BASE}/api/grocery`],
+      ['categories', `${API_BASE}/api/menu-categories`],
     ];
 
     for (const [key, endpoint] of endpoints) {
@@ -130,6 +132,7 @@ export function AppProvider({ children }) {
       setOrderHistory(allOrders.filter(isClosedOrder));
     }
     if (responses.grocery) setGroceryItems(responses.grocery);
+    if (responses.categories) setFoodCategories(responses.categories);
   };
 
   // Fetch initial data from backend (fallback to defaults if backend not ready)
@@ -566,6 +569,42 @@ export function AppProvider({ children }) {
     }
   };
 
+  const addFoodCategory = async (name) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/menu-categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to add category');
+      }
+      const newCat = await res.json();
+      setFoodCategories(prev => [...prev, newCat]);
+      return newCat;
+    } catch (e) {
+      console.error('addFoodCategory error:', e);
+      throw e;
+    }
+  };
+
+  const removeFoodCategory = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/menu-categories/${id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to delete category');
+      }
+      setFoodCategories(prev => prev.filter(c => c.id !== id));
+    } catch (e) {
+      console.error('removeFoodCategory error:', e);
+      throw e;
+    }
+  };
+
   const addGroceryItem = async (name, quantity, unit) => {
     const tempId = Date.now();
     setGroceryItems(prev => [...prev, { id: tempId, name, quantity, unit, purchased: false }]);
@@ -653,10 +692,10 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       appMode, setAppMode,
-      tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, dataErrors,
+      tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, dataErrors, foodCategories,
       refreshData,
       placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, updateOrderItemQuantity, markOrderReady, closeOrder, deleteOrder, freeTable, updateTableStatus,
-      addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem,
+      addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, addFoodCategory, removeFoodCategory,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
       addStoreItem, updateStoreItemStock, checkoutStoreOrder,
       sidebarOpen, sidebarMinimized, toggleSidebarMinimized, toggleSidebarOpen, closeSidebar,

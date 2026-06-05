@@ -1,47 +1,38 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
-}
-
-/**
- * ---------- Core tables ----------
- */
-
 model Table {
-  id       Int    @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   name     String
   capacity Int
-  status   String // available | occupied | reserved
-
-  orders Order[]
+  status   String
+  orders   Order[]
 }
 
 model Order {
-  id          String @id @default(uuid())
-  orderNumber Int
-  orderDate   String
-
-  tableId    Int?
-  table      Table?   @relation(fields: [tableId], references: [id])
-  customerId String?
-  customer   Profile? @relation(fields: [customerId], references: [id])
-  customerName String?
-
-  items OrderItem[]
-
-  total  Int
-  status String // Preparing | Ready | Paid
-  paymentMethod String @default("Cash") // Cash | UPI | Card
-  paymentStatus String @default("Paid") // Paid | Pending
-
-  createdAt DateTime  @default(now())
-  paidAt    DateTime?
+  id            String      @id @default(uuid())
+  tableId       Int?
+  total         Int
+  status        String
+  createdAt     DateTime    @default(now())
+  paidAt        DateTime?
+  customerId    String?
+  orderNumber   Int
+  paymentMethod String      @default("Cash")
+  orderDate     String
+  customerName  String?
+  paymentStatus String      @default("Paid")
+  customer      Profile?    @relation(fields: [customerId], references: [id])
+  table         Table?      @relation(fields: [tableId], references: [id])
+  items         OrderItem[]
 
   @@unique([orderDate, orderNumber])
 }
@@ -53,47 +44,30 @@ model OrderDailySequence {
 }
 
 model OrderItem {
-  id Int @id @default(autoincrement())
-
-  orderId String
-  order   Order  @relation(fields: [orderId], references: [id])
-
+  id         Int      @id @default(autoincrement())
+  orderId    String
   menuItemId Int
+  quantity   Int
+  addOns     Json?
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
-
-  quantity Int
-
-  addOns Json? // { roti: 1, curry: -1 }
+  order      Order    @relation(fields: [orderId], references: [id])
 }
 
-/**
- * ---------- Menu ----------
- */
-
 model MenuItem {
-  id Int @id @default(autoincrement())
-
+  id       Int         @id @default(autoincrement())
   name     String
   category String
   price    Int
+  enabled  Boolean     @default(true)
   image    String?
-
-  enabled Boolean @default(true)
-
-  orders OrderItem[]
+  orders   OrderItem[]
 }
 
-/**
- * ---------- Grocery ----------
- */
-
 model GroceryItem {
-  id Int @id @default(autoincrement())
-
-  name     String
-  quantity Float
-  unit     String
-
+  id        Int     @id @default(autoincrement())
+  name      String
+  quantity  Float
+  unit      String
   purchased Boolean @default(false)
 }
 
@@ -105,15 +79,13 @@ model Expense {
   date        DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([date])
 }
 
-/**
- * ---------- Store (optional) ----------
- */
-
 model StoreProduct {
-  id String @id
-
+  id       String  @id
   name     String
   category String
   price    Int
@@ -122,15 +94,23 @@ model StoreProduct {
 }
 
 model Profile {
-  id          String   @id @default(uuid())
-  email       String   @unique // Treated as unique username/email for auth
-  password    String?
-  role        String
-  displayName String?
-  phone       String?
-  address     String?
-  avatar      String?
-  createdAt   DateTime @default(now())
-
-  orders Order[]
+  id             String    @id @default(uuid())
+  username       String    @unique
+  role           String
+  address        String?
+  avatar         String?
+  createdAt      DateTime  @default(now())
+  displayName    String?
+  password       String?
+  phone          String?
+  approvalStatus String    @default("approved")
+  approvedAt     DateTime?
+  approvedBy     String?
+  orders         Order[]
 }
+
+model MenuCategory {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
