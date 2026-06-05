@@ -10,15 +10,13 @@
   box-sizing: border-box;
 }
 
-.menu-page {
-  padding: 2rem;
+/* ── Header ─────────────────────────────────────── */
+.menu-management-header {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  overflow-y: auto;
-  height: 100%;
-  position: relative;
-  padding-bottom: 80px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .menu-management-header h1 {
@@ -26,6 +24,229 @@
   font-weight: 700;
 }
 
+/* Categories toggle button in header */
+.cat-manager-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.cat-manager-toggle-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(232, 65, 24, 0.04);
+}
+
+.cat-manager-toggle-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.cat-count-badge {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.cat-manager-toggle-btn.active .cat-count-badge {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Category Manager Panel ──────────────────────── */
+.category-manager-panel {
+  background: white;
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cat-panel-header {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cat-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cat-panel-title h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.cat-panel-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 0.25rem;
+}
+
+.cat-panel-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Add Category Form ───────────────────────────── */
+.cat-add-form {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.cat-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cat-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.cat-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem 0.6rem 2.2rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+}
+
+.cat-input:focus {
+  border-color: var(--primary);
+  background: white;
+}
+
+.cat-add-btn {
+  padding: 0.6rem 1.1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.cat-add-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.cat-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--primary);
+  background: rgba(232, 65, 24, 0.08);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+/* ── Category Pills ──────────────────────────────── */
+.cat-pills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cat-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem 0.4rem 0.6rem;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--cat-color) 10%, white);
+  border: 1.5px solid color-mix(in srgb, var(--cat-color) 25%, transparent);
+  color: color-mix(in srgb, var(--cat-color) 80%, #111);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.cat-pill:hover {
+  background: color-mix(in srgb, var(--cat-color) 16%, white);
+  border-color: color-mix(in srgb, var(--cat-color) 45%, transparent);
+}
+
+.cat-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cat-color);
+  flex-shrink: 0;
+}
+
+.cat-pill-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-pill-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: color-mix(in srgb, var(--cat-color) 80%, #111);
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.cat-pill-delete:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--cat-color) 20%, transparent);
+}
+
+/* ── Main Content Grid ──────────────────────────── */
 .menu-management-content {
   display: grid;
   grid-template-columns: minmax(240px, 0.8fr) minmax(0, 2.2fr);
@@ -40,6 +261,7 @@
   }
 }
 
+/* ── Add / Edit Form Card ───────────────────────── */
 .add-item-card {
   padding: 1rem;
 }
@@ -127,6 +349,7 @@
   font-weight: 600;
 }
 
+/* ── Dishes Table Card ──────────────────────────── */
 .items-list-card {
   padding: 1rem;
   min-width: 0;
@@ -146,7 +369,6 @@
   padding: 2rem 0;
 }
 
-/* Desktop Table Styles */
 .menu-items-table {
   width: 100%;
   border-collapse: collapse;
@@ -154,25 +376,11 @@
   font-size: 0.82rem;
 }
 
-.menu-items-table th:nth-child(1) {
-  width: 38%;
-}
-
-.menu-items-table th:nth-child(2) {
-  width: 17%;
-}
-
-.menu-items-table th:nth-child(3) {
-  width: 13%;
-}
-
-.menu-items-table th:nth-child(4) {
-  width: 18%;
-}
-
-.menu-items-table th:nth-child(5) {
-  width: 14%;
-}
+.menu-items-table th:nth-child(1) { width: 38%; }
+.menu-items-table th:nth-child(2) { width: 17%; }
+.menu-items-table th:nth-child(3) { width: 13%; }
+.menu-items-table th:nth-child(4) { width: 18%; }
+.menu-items-table th:nth-child(5) { width: 14%; }
 
 .menu-items-table th {
   text-align: left;
@@ -193,13 +401,8 @@
   min-width: 0;
 }
 
-.menu-items-table tr:last-child td {
-  border-bottom: none;
-}
-
-.menu-items-table tr.item-disabled td {
-  opacity: 0.6;
-}
+.menu-items-table tr:last-child td { border-bottom: none; }
+.menu-items-table tr.item-disabled td { opacity: 0.6; }
 
 .table-dish-info {
   display: flex;
@@ -224,14 +427,18 @@
   overflow-wrap: anywhere;
 }
 
+/* Colored category badge in table */
 .dish-category-badge {
-  background: var(--bg-color);
-  padding: 0.2rem 0.45rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-weight: 500;
   display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--cat-color, #6c5ce7) 10%, white);
+  color: color-mix(in srgb, var(--cat-color, #6c5ce7) 80%, #111);
+  border: 1px solid color-mix(in srgb, var(--cat-color, #6c5ce7) 20%, transparent);
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -259,19 +466,20 @@
   max-width: 100%;
 }
 
-.status-toggle-btn.enabled {
-  color: var(--success);
+.status-toggle-btn.enabled  { color: var(--success); }
+.status-toggle-btn.disabled { color: var(--text-muted); }
+.status-toggle-btn:hover    { background: var(--bg-color); }
+
+.dish-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
-.status-toggle-btn.disabled {
-  color: var(--text-muted);
-}
-
-.status-toggle-btn:hover {
-  background: var(--bg-color);
-}
-
-.delete-dish-btn {
+.delete-dish-btn,
+.edit-dish-btn {
   border: none;
   background: transparent;
   color: var(--text-muted);
@@ -285,36 +493,8 @@
   flex-shrink: 0;
 }
 
-.delete-dish-btn:hover {
-  background: rgba(232, 65, 24, 0.1);
-  color: var(--primary);
-}
-
-.edit-dish-btn {
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.35rem;
-  border-radius: 6px;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dish-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.edit-dish-btn:hover {
-  background: rgba(9, 132, 227, 0.1);
-  color: #0984e3;
-}
+.delete-dish-btn:hover { background: rgba(232, 65, 24, 0.1); color: var(--primary); }
+.edit-dish-btn:hover   { background: rgba(9, 132, 227, 0.1); color: #0984e3; }
 
 .dish-details {
   display: flex;
@@ -323,18 +503,7 @@
   min-width: 0;
 }
 
-.dish-mobile-category {
-  display: none;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  background: var(--bg-color);
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  width: fit-content;
-}
-
-/* Mobile Card View - replaces table on small screens */
+/* ── Mobile Card View ───────────────────────────── */
 .mobile-items-list {
   display: none;
   flex-direction: column;
@@ -375,25 +544,18 @@
   border-top: 1px solid var(--border-color);
 }
 
-.mobile-item-card.item-disabled {
-  opacity: 0.6;
-}
+.mobile-item-card.item-disabled { opacity: 0.6; }
 
-/* Mobile breakpoints */
+/* ── Breakpoints ─────────────────────────────────── */
 @media (max-width: 900px) {
-  .desktop-table {
-    display: none !important;
-  }
-
-  .mobile-items-list {
-    display: flex;
-  }
+  .desktop-table        { display: none !important; }
+  .mobile-items-list    { display: flex; }
+  .cat-add-form         { flex-direction: column; }
+  .cat-add-btn          { width: 100%; }
 }
 
 @media (max-width: 1180px) and (min-width: 901px) {
-  .status-text {
-    display: none;
-  }
+  .status-text { display: none; }
 }
 
 @media (max-width: 480px) {
@@ -401,8 +563,7 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-
-  .menu-management-page {
-    padding: 0.75rem !important;
-  }
+  .menu-management-page { padding: 0.75rem !important; }
+  .cat-panel-title { flex-wrap: wrap; }
+  .cat-panel-subtitle { display: none; }
 }

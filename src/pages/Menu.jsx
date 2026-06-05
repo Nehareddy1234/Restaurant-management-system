@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, ToggleLeft, ToggleRight, Check, AlertCircle, Edit } from 'lucide-react';
+import { Plus, Trash2, ToggleLeft, ToggleRight, Check, AlertCircle, Edit, Tag, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Menu.css';
+
+const CATEGORY_COLORS = [
+  '#e84393', '#e17055', '#00b894', '#0984e3', '#6c5ce7',
+  '#fdcb6e', '#00cec9', '#d63031', '#a29bfe', '#55efc4'
+];
 
 export default function Menu() {
   const { menuItems, addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, foodCategories, addFoodCategory, removeFoodCategory } = useApp();
@@ -13,9 +18,10 @@ export default function Menu() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingItem, setEditingItem] = useState(null);
-  
+
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [catError, setCatError] = useState('');
 
   const handleStartEdit = (item) => {
     setEditingItem(item);
@@ -42,36 +48,18 @@ export default function Menu() {
     setError('');
     setSuccess('');
 
-    if (!name.trim()) {
-      setError('Item name is required.');
-      return;
-    }
+    if (!name.trim()) { setError('Item name is required.'); return; }
+    if (!price || parseFloat(price) <= 0) { setError('Please enter a valid price greater than 0.'); return; }
 
-    if (!price || parseFloat(price) <= 0) {
-      setError('Please enter a valid price greater than 0.');
-      return;
-    }
-
-    // Default image if none provided
     const imageUrl = image.trim() || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200';
 
     try {
       if (editingItem) {
-        await updateMenuItem(editingItem.id, {
-          name: name.trim(),
-          category,
-          price: parseFloat(price),
-          image: imageUrl
-        });
+        await updateMenuItem(editingItem.id, { name: name.trim(), category, price: parseFloat(price), image: imageUrl });
         setEditingItem(null);
         setSuccess('Menu item updated successfully!');
       } else {
-        await addMenuItem({
-          name: name.trim(),
-          category,
-          price: parseFloat(price),
-          image: imageUrl
-        });
+        await addMenuItem({ name: name.trim(), category, price: parseFloat(price), image: imageUrl });
         setSuccess('Menu item added successfully!');
       }
       setName('');
@@ -85,16 +73,16 @@ export default function Menu() {
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    setError('');
+    setCatError('');
     try {
       await addFoodCategory(newCategoryName);
       setNewCategoryName('');
-      setSuccess('Category added!');
-      setTimeout(() => setSuccess(''), 2000);
     } catch (err) {
-      setError(err.message);
+      setCatError(err.message);
     }
   };
+
+  const getCategoryColor = (index) => CATEGORY_COLORS[index % CATEGORY_COLORS.length];
 
   return (
     <div className="menu-management-page">
@@ -103,45 +91,83 @@ export default function Menu() {
           <h1>Menu Management</h1>
           <p className="text-muted">Manage restaurant dishes, add new items, or enable/disable them</p>
         </div>
+        <button
+          className={`cat-manager-toggle-btn ${showCategoryManager ? 'active' : ''}`}
+          onClick={() => setShowCategoryManager(!showCategoryManager)}
+        >
+          <Tag size={16} />
+          <span>Categories</span>
+          <span className="cat-count-badge">{foodCategories.length}</span>
+          {showCategoryManager ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
       </header>
 
-      <div className="menu-management-content">
-        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
-          <button className="btn btn-outline" onClick={() => setShowCategoryManager(!showCategoryManager)}>
-            {showCategoryManager ? 'Hide Categories' : 'Manage Food Categories'}
-          </button>
-        </div>
-
-        {showCategoryManager && (
-          <div className="add-item-card card" style={{ marginBottom: '1rem' }}>
-            <h2>Manage Categories</h2>
-            <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <input 
-                type="text" 
-                placeholder="New Category Name" 
-                value={newCategoryName} 
-                onChange={e => setNewCategoryName(e.target.value)} 
-                required 
-                style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-              />
-              <button type="submit" className="btn btn-primary" style={{ margin: 0, whiteSpace: 'nowrap' }}><Plus size={16}/> Add</button>
-            </form>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {foodCategories.map(cat => (
-                <div key={cat.id} className="dish-category-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.8rem', background: '#f1f2f6', border: '1px solid #dcdde1', color: '#2f3640', fontSize: '0.9rem', borderRadius: '20px' }}>
-                  {cat.name}
-                  <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d63031', padding: 0, display: 'flex' }} onClick={() => {
-                      if (window.confirm(`Delete category "${cat.name}"?`)) removeFoodCategory(cat.id);
-                    }}>
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
+      {/* Category Manager Panel */}
+      {showCategoryManager && (
+        <div className="category-manager-panel">
+          <div className="cat-panel-header">
+            <div className="cat-panel-title">
+              <Tag size={18} />
+              <h2>Food Categories</h2>
+              <span className="cat-panel-subtitle">Add or remove menu categories</span>
             </div>
           </div>
-        )}
 
-        {/* Add Item Form */}
+          <div className="cat-panel-body">
+            <form onSubmit={handleAddCategory} className="cat-add-form">
+              <div className="cat-input-wrapper">
+                <Plus size={16} className="cat-input-icon" />
+                <input
+                  type="text"
+                  placeholder="Type new category name…"
+                  value={newCategoryName}
+                  onChange={e => setNewCategoryName(e.target.value)}
+                  required
+                  className="cat-input"
+                />
+              </div>
+              <button type="submit" className="cat-add-btn">
+                Add Category
+              </button>
+            </form>
+            {catError && (
+              <div className="cat-error">
+                <AlertCircle size={14} /> {catError}
+              </div>
+            )}
+
+            <div className="cat-pills-grid">
+              {foodCategories.length === 0 ? (
+                <p className="cat-empty">No categories yet. Add one above!</p>
+              ) : (
+                foodCategories.map((cat, index) => (
+                  <div
+                    key={cat.id}
+                    className="cat-pill"
+                    style={{ '--cat-color': getCategoryColor(index) }}
+                  >
+                    <span className="cat-pill-dot" />
+                    <span className="cat-pill-name">{cat.name}</span>
+                    <button
+                      type="button"
+                      className="cat-pill-delete"
+                      onClick={() => {
+                        if (window.confirm(`Delete category "${cat.name}"?`)) removeFoodCategory(cat.id);
+                      }}
+                      title={`Delete ${cat.name}`}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="menu-management-content">
+        {/* Add / Edit Dish Form */}
         <div className="add-item-card card">
           <h2>{editingItem ? 'Edit Dish' : 'Add New Dish'}</h2>
           <form onSubmit={handleSubmit} className="add-item-form">
@@ -245,19 +271,25 @@ export default function Menu() {
                     </tr>
                   </thead>
                   <tbody>
-                    {menuItems.map(item => (
+                    {menuItems.map((item, index) => (
                       <tr key={item.id} className={item.enabled ? '' : 'item-disabled'}>
                         <td>
                           <div className="table-dish-info">
                             <div className="dish-img" style={{ backgroundImage: `url("${item.image}"), url("https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200")` }}></div>
                             <div className="dish-details">
                               <span className="dish-name">{item.name}</span>
-                              <span className="dish-mobile-category">{item.category}</span>
                             </div>
                           </div>
                         </td>
                         <td>
-                          <span className="dish-category-badge">{item.category}</span>
+                          <span
+                            className="dish-category-badge"
+                            style={{
+                              '--cat-color': getCategoryColor(foodCategories.findIndex(c => c.name === item.category)),
+                            }}
+                          >
+                            {item.category}
+                          </span>
                         </td>
                         <td>
                           <strong className="dish-price">₹{item.price}</strong>
@@ -269,49 +301,36 @@ export default function Menu() {
                             title={item.enabled ? 'Click to Disable' : 'Click to Enable'}
                           >
                             {item.enabled ? (
-                              <>
-                                <ToggleRight size={24} color="var(--success)" />
-                                <span className="status-text">Active</span>
-                              </>
+                              <><ToggleRight size={24} color="var(--success)" /><span className="status-text">Active</span></>
                             ) : (
-                              <>
-                                <ToggleLeft size={24} color="var(--text-muted)" />
-                                <span className="status-text">Disabled</span>
-                              </>
+                              <><ToggleLeft size={24} color="var(--text-muted)" /><span className="status-text">Disabled</span></>
                             )}
                           </button>
                         </td>
                         <td>
                           <div className="dish-actions">
-                          <button
-                            className="edit-dish-btn"
-                            onClick={() => handleStartEdit(item)}
-                            title="Edit Dish"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            className="delete-dish-btn"
-                            onClick={async () => {
-                              if (window.confirm(`Are you sure you want to delete ${item.name}?`)) {
-                                try {
-                                  await removeMenuItem(item.id);
-                                } catch (err) {
-                                  setError(`Failed to remove item: ${err.message}`);
+                            <button className="edit-dish-btn" onClick={() => handleStartEdit(item)} title="Edit Dish">
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              className="delete-dish-btn"
+                              onClick={async () => {
+                                if (window.confirm(`Are you sure you want to delete ${item.name}?`)) {
+                                  try { await removeMenuItem(item.id); }
+                                  catch (err) { setError(`Failed to remove item: ${err.message}`); }
                                 }
-                              }
-                            }}
-                            title="Remove from Menu"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                              }}
+                              title="Remove from Menu"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                
+
                 {/* Mobile Card View */}
                 <div className="mobile-items-list">
                   {menuItems.map(item => (
@@ -324,39 +343,16 @@ export default function Menu() {
                         <strong className="dish-price">₹{item.price}</strong>
                       </div>
                       <div className="mobile-item-actions">
-                        <button
-                          className={`status-toggle-btn ${item.enabled ? 'enabled' : 'disabled'}`}
-                          onClick={() => toggleMenuItemEnabled(item.id)}
-                          title={item.enabled ? 'Click to Disable' : 'Click to Enable'}
-                        >
-                          {item.enabled ? (
-                            <ToggleRight size={20} color="var(--success)" />
-                          ) : (
-                            <ToggleLeft size={20} color="var(--text-muted)" />
-                          )}
+                        <button className={`status-toggle-btn ${item.enabled ? 'enabled' : 'disabled'}`} onClick={() => toggleMenuItemEnabled(item.id)}>
+                          {item.enabled ? <ToggleRight size={20} color="var(--success)" /> : <ToggleLeft size={20} color="var(--text-muted)" />}
                         </button>
-                        <button
-                          className="edit-dish-btn"
-                          onClick={() => handleStartEdit(item)}
-                          title="Edit Dish"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          className="delete-dish-btn"
-                          onClick={async () => {
-                            if (window.confirm(`Are you sure you want to delete ${item.name}?`)) {
-                              try {
-                                await removeMenuItem(item.id);
-                              } catch (err) {
-                                setError(`Failed to remove item: ${err.message}`);
-                              }
-                            }
-                          }}
-                          title="Remove from Menu"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <button className="edit-dish-btn" onClick={() => handleStartEdit(item)}><Edit size={16} /></button>
+                        <button className="delete-dish-btn" onClick={async () => {
+                          if (window.confirm(`Delete ${item.name}?`)) {
+                            try { await removeMenuItem(item.id); }
+                            catch (err) { setError(`Failed: ${err.message}`); }
+                          }
+                        }}><Trash2 size={16} /></button>
                       </div>
                     </div>
                   ))}
