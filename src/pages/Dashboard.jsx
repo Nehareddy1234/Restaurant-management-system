@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, ShoppingBag, Users, Clock, ArrowUpRight, ChefHat, Key, Eye, EyeOff } from 'lucide-react';
+import { TrendingUp, ShoppingBag, Users, ArrowUpRight, ChefHat, Key, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -56,7 +56,6 @@ export default function Dashboard() {
     { label: "Today's Revenue",  value: `₹${todayRevenue.toLocaleString()}`, change: '', icon: <TrendingUp size={22} />, color: '#e84118' },
     { label: 'Active Orders',    value: activeOrders.length, change: '', icon: <ShoppingBag size={22} />, color: '#0097e6' },
     { label: 'Tables Occupied',  value: `${occupied}/${total}`, change: '', icon: <Users size={22} />, color: '#8c7ae6' },
-    { label: 'Avg. Order Time',  value: '0 min', change: '', icon: <Clock size={22} />, color: '#4cd137' },
   ];
 
   // Combine active and recent history for the table preview
