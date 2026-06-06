@@ -150,3 +150,45 @@
     width: 100%;
   }
 }
+
+.old-settlement-form {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-color);
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.old-settlement-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 150px;
+}
+
+.old-settlement-form label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.old-settlement-form input,
+.old-settlement-form select {
+  padding: 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.old-settlement-form input:focus,
+.old-settlement-form select:focus {
+  border-color: var(--primary);
+}

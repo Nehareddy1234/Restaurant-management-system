@@ -461,6 +461,27 @@ export function AppProvider({ children }) {
     return updatedOrder;
   };
 
+  const logOldSettlement = async (customerName, amount, paymentMethod) => {
+    const res = await fetch(`${API_BASE}/api/orders/old-settlement`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName,
+        amount,
+        paymentMethod,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.details || err.error || `Failed to log settlement (${res.status})`);
+    }
+
+    const createdOrder = await res.json();
+    setOrderHistory(prev => [createdOrder, ...prev]);
+    return createdOrder;
+  };
+
   const freeTable = (tableId) => {
     const table = tables.find(t => t.id === tableId);
     if (table?.order) closeOrder(table.order.id);
@@ -696,7 +717,7 @@ export function AppProvider({ children }) {
       appMode, setAppMode,
       tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, dataErrors, foodCategories,
       refreshData,
-      placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, updateOrderItemQuantity, markOrderReady, closeOrder, deleteOrder, freeTable, updateTableStatus,
+      placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, logOldSettlement, updateOrderItemQuantity, markOrderReady, closeOrder, deleteOrder, freeTable, updateTableStatus,
       addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, addFoodCategory, removeFoodCategory,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
       addStoreItem, updateStoreItemStock, checkoutStoreOrder,

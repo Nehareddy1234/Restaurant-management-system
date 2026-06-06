@@ -875,6 +875,32 @@ export default async function handler(req, res) {
        */
       if (method === 'POST') {
         const body = await getJsonBody(req);
+
+        if (id === 'old-settlement') {
+          const total = Number(body.amount) || 0;
+          const customerName = normalizeCustomerName(body.customerName) || 'Old Settlement';
+          const paymentMethod = normalizePaymentMethod(body.paymentMethod);
+
+          const created = await prisma.$transaction(async (tx) => {
+            const { orderDate, orderNumber } = await getNextOrderNumber(tx);
+            return await tx.order.create({
+              data: {
+                orderDate,
+                orderNumber,
+                tableId: null,
+                total,
+                status: 'Paid',
+                paymentStatus: 'Paid',
+                paymentMethod,
+                customerName,
+                paidAt: new Date(),
+              },
+              include: orderInclude,
+            });
+          });
+          return send(res, 201, mapOrder(created));
+        }
+
         const cartItems = parseOrderItems(body.items);
         const enrichedCart = await enrichCartItems(cartItems);
 

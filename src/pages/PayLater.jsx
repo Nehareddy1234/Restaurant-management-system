@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { CreditCard, Search, CheckCircle, Clock } from 'lucide-react';
+import { CreditCard, Search, CheckCircle, Clock, Plus, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './PayLater.css';
 
 export default function PayLater() {
-  const { orderHistory, settlePayLaterOrder } = useApp();
+  const { orderHistory, settlePayLaterOrder, logOldSettlement } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [settlingOrderId, setSettlingOrderId] = useState(null);
+  
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [oldName, setOldName] = useState('');
+  const [oldAmount, setOldAmount] = useState('');
+  const [oldMethod, setOldMethod] = useState('Cash');
+  const [isLogging, setIsLogging] = useState(false);
 
   const payLaterOrders = orderHistory
     .filter(order => order.paymentStatus === 'Pending')
@@ -35,6 +41,25 @@ export default function PayLater() {
     }
   };
 
+  const handleLogOld = async (e) => {
+    e.preventDefault();
+    if (!oldName.trim() || !oldAmount || isLogging) return;
+    setIsLogging(true);
+    try {
+      await logOldSettlement(oldName, Number(oldAmount), oldMethod);
+      setShowAddForm(false);
+      setOldName('');
+      setOldAmount('');
+      setOldMethod('Cash');
+      // Optional: a non-blocking toast would be better, but alert works
+      alert('Old settlement logged successfully! It has been added to today\'s revenue.');
+    } catch (err) {
+      alert(`Could not log settlement: ${err.message}`);
+    } finally {
+      setIsLogging(false);
+    }
+  };
+
   return (
     <div className="pay-later-page">
       <header className="pay-later-header">
@@ -54,16 +79,59 @@ export default function PayLater() {
       <div className="pay-later-card card">
         <div className="pay-later-toolbar">
           <h2>Pending Payments</h2>
-          <div className="search-bar">
-            <Search size={18} className="text-muted" />
-            <input
-              type="text"
-              placeholder="Search by name, order, or table..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="search-bar">
+              <Search size={18} className="text-muted" />
+              <input
+                type="text"
+                placeholder="Search by name, order, or table..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button className="btn btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
+              {showAddForm ? <X size={18} /> : <Plus size={18} />}
+              {showAddForm ? 'Close Form' : 'Log Old Settlement'}
+            </button>
           </div>
         </div>
+
+        {showAddForm && (
+          <form className="old-settlement-form" onSubmit={handleLogOld}>
+            <div className="form-group">
+              <label>Customer Name</label>
+              <input 
+                type="text" 
+                required 
+                placeholder="e.g. Rahul"
+                value={oldName}
+                onChange={e => setOldName(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label>Amount Received (₹)</label>
+              <input 
+                type="number" 
+                required 
+                min="1"
+                placeholder="0"
+                value={oldAmount}
+                onChange={e => setOldAmount(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label>Payment Method</label>
+              <select value={oldMethod} onChange={e => setOldMethod(e.target.value)}>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Card">Card</option>
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={isLogging} style={{ alignSelf: 'flex-end', height: '42px' }}>
+              {isLogging ? 'Logging...' : 'Log Payment'}
+            </button>
+          </form>
+        )}
 
         {payLaterOrders.length === 0 ? (
           <div className="pay-later-empty">
