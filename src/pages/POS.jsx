@@ -31,9 +31,7 @@ export default function POS() {
   const [loadedOrderId, setLoadedOrderId] = useState(null);
   const [activeTab, setActiveTab] = useState('menu');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [parcelCharge, setParcelCharge] = useState(false);
-
-  const PARCEL_CHARGE = 10;
+  const [parcelCharge, setParcelCharge] = useState('');
 
   // Load existing order when editOrderId changes
   useEffect(() => {
@@ -108,7 +106,8 @@ export default function POS() {
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const total = subtotal + (parcelCharge ? PARCEL_CHARGE : 0);
+  const parsedParcelCharge = Number(parcelCharge) || 0;
+  const total = subtotal + parsedParcelCharge;
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0 || isSubmitting) return;
@@ -117,9 +116,9 @@ export default function POS() {
 
     try {
       if (editOrderId) {
-        await updateOrder(editOrderId, cart, tableId, canSetCustomerName ? customerName : undefined, parcelCharge ? PARCEL_CHARGE : 0);
+        await updateOrder(editOrderId, cart, tableId, canSetCustomerName ? customerName : undefined, parsedParcelCharge);
       } else {
-        await placeOrder(cart, tableId, 'Cash', canSetCustomerName ? customerName : '', parcelCharge ? PARCEL_CHARGE : 0);
+        await placeOrder(cart, tableId, 'Cash', canSetCustomerName ? customerName : '', parsedParcelCharge);
       }
     } catch (err) {
       alert(`Could not place order: ${err.message}`);
@@ -130,7 +129,7 @@ export default function POS() {
     setCart([]);
     setSelectedTable('');
     setCustomerName('');
-    setParcelCharge(false);
+    setParcelCharge('');
     setLoadedOrderId(null);
     setSearchParams({});
     setActiveTab('menu');
@@ -144,7 +143,7 @@ export default function POS() {
     setCart([]);
     setSelectedTable('');
     setCustomerName('');
-    setParcelCharge(false);
+    setParcelCharge('');
     setLoadedOrderId(null);
     setActiveTab('menu');
   };
@@ -304,15 +303,20 @@ export default function POS() {
 
         <div className="cart-summary">
           <div className="summary-row"><span>Subtotal</span><span>₹{subtotal.toFixed(0)}</span></div>
-          <button
-            className={`parcel-charge-toggle ${parcelCharge ? 'active' : ''}`}
-            onClick={() => setParcelCharge(p => !p)}
-            type="button"
-          >
-            <Package size={15} />
-            <span>Parcel Charge (₹{PARCEL_CHARGE})</span>
-            <span className={`parcel-toggle-indicator ${parcelCharge ? 'on' : ''}`} />
-          </button>
+          <div className="parcel-charge-input-container">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Package size={15} />
+              <label htmlFor="parcel-charge-input" style={{ cursor: 'pointer' }}>Parcel Charge</label>
+            </div>
+            <input
+              id="parcel-charge-input"
+              type="number"
+              min="0"
+              placeholder="0"
+              value={parcelCharge}
+              onChange={(e) => setParcelCharge(e.target.value)}
+            />
+          </div>
           <div className="summary-row total"><span>Total</span><span>₹{total.toFixed(0)}</span></div>
           <div style={{ display: 'flex', gap: '0.5rem', width: '100%', marginTop: '0.25rem' }}>
             {editOrderId && (
