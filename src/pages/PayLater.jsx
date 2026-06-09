@@ -11,7 +11,6 @@ export default function PayLater() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [oldName, setOldName] = useState('');
   const [oldAmount, setOldAmount] = useState('');
-  const [oldMethod, setOldMethod] = useState('Cash');
   const [isLogging, setIsLogging] = useState(false);
 
   const payLaterOrders = orderHistory
@@ -46,13 +45,12 @@ export default function PayLater() {
     if (!oldName.trim() || !oldAmount || isLogging) return;
     setIsLogging(true);
     try {
-      await logOldSettlement(oldName, Number(oldAmount), oldMethod);
+      await logOldSettlement(oldName, Number(oldAmount), 'Pay Later');
       setShowAddForm(false);
       setOldName('');
       setOldAmount('');
-      setOldMethod('Cash');
       // Optional: a non-blocking toast would be better, but alert works
-      alert('Old settlement logged successfully! It has been added to today\'s revenue.');
+      alert('Debt record added successfully! It has been added to pending pay later orders.');
     } catch (err) {
       alert(`Could not log settlement: ${err.message}`);
     } finally {
@@ -91,7 +89,7 @@ export default function PayLater() {
             </div>
             <button className="btn btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
               {showAddForm ? <X size={18} /> : <Plus size={18} />}
-              {showAddForm ? 'Close Form' : 'Log Old Settlement'}
+              {showAddForm ? 'Close Form' : 'Add Debt Record'}
             </button>
           </div>
         </div>
@@ -109,7 +107,7 @@ export default function PayLater() {
               />
             </div>
             <div className="form-group">
-              <label>Amount Received (₹)</label>
+              <label>Amount Due (₹)</label>
               <input 
                 type="number" 
                 required 
@@ -119,16 +117,8 @@ export default function PayLater() {
                 onChange={e => setOldAmount(e.target.value)}
               />
             </div>
-            <div className="form-group">
-              <label>Payment Method</label>
-              <select value={oldMethod} onChange={e => setOldMethod(e.target.value)}>
-                <option value="Cash">Cash</option>
-                <option value="UPI">UPI</option>
-                <option value="Card">Card</option>
-              </select>
-            </div>
             <button type="submit" className="btn btn-primary" disabled={isLogging} style={{ alignSelf: 'flex-end', height: '42px' }}>
-              {isLogging ? 'Logging...' : 'Log Payment'}
+              {isLogging ? 'Adding...' : 'Add Record'}
             </button>
           </form>
         )}

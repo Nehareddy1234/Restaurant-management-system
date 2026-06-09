@@ -166,7 +166,7 @@ function calcTotal(cartItems) {
 }
 
 function normalizePaymentMethod(paymentMethod) {
-  return ['Cash', 'UPI', 'Card'].includes(paymentMethod) ? paymentMethod : 'Cash';
+  return ['Cash', 'UPI', 'Card', 'Pay Later'].includes(paymentMethod) ? paymentMethod : 'Cash';
 }
 
 function normalizeCustomerName(customerName) {
@@ -880,6 +880,7 @@ export default async function handler(req, res) {
           const total = Number(body.amount) || 0;
           const customerName = normalizeCustomerName(body.customerName) || 'Old Settlement';
           const paymentMethod = normalizePaymentMethod(body.paymentMethod);
+          const isPayLater = paymentMethod === 'Pay Later';
 
           const created = await prisma.$transaction(async (tx) => {
             const { orderDate, orderNumber } = await getNextOrderNumber(tx);
@@ -890,10 +891,10 @@ export default async function handler(req, res) {
                 tableId: null,
                 total,
                 status: 'Paid',
-                paymentStatus: 'Paid',
+                paymentStatus: isPayLater ? 'Pending' : 'Paid',
                 paymentMethod,
                 customerName,
-                paidAt: new Date(),
+                paidAt: isPayLater ? null : new Date(),
               },
               include: orderInclude,
             });
