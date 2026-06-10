@@ -1,21 +1,36 @@
 import React, { useState } from 'react';
-import { Search, DollarSign, ShoppingBag, Eye } from 'lucide-react';
+import { Search, DollarSign, ShoppingBag, Eye, Calendar, TrendingDown, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './History.css'; // Reuse History CSS
 
 export default function GroceryHistory() {
-  const { storeOrders } = useApp();
+  const { storeOrders, getIstDateInputValue } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState(getIstDateInputValue());
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const filteredHistory = storeOrders.filter(order => {
+    const dateObj = new Date(order.orderDate || order.createdAt || Date.now());
+    const orderDateStr = getIstDateInputValue(dateObj);
+    
+    if (dateFilter !== 'All' && orderDateStr !== dateFilter) return false;
+    
     const idMatch = (order.id || '').toLowerCase().includes(searchQuery.toLowerCase());
     const numberMatch = order.orderNumber && order.orderNumber.toString().includes(searchQuery);
     return idMatch || numberMatch;
   });
 
-  const totalRevenue = storeOrders.reduce((sum, order) => sum + (order.totalAmount || order.total || 0), 0);
-  const totalOrders = storeOrders.length;
+  const totalRevenue = filteredHistory.reduce((sum, order) => sum + (order.totalAmount || order.total || 0), 0);
+  
+  let totalExpenses = 0;
+  filteredHistory.forEach(order => {
+    order.items?.forEach(item => {
+      totalExpenses += (item.buyingCost || 0) * (item.quantity || 1);
+    });
+  });
+
+  const netProfit = totalRevenue - totalExpenses;
+  const totalOrders = filteredHistory.length;
 
   return (
     <div className="history-page">
@@ -24,27 +39,65 @@ export default function GroceryHistory() {
           <h1>Store Sales History</h1>
           <p className="text-muted">Review all completed retail grocery orders</p>
         </div>
+        <div className="date-filter-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card-bg, #fff)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <Calendar size={18} className="text-muted" />
+          <input 
+            type="date"
+            value={dateFilter === 'All' ? '' : dateFilter}
+            onChange={(e) => setDateFilter(e.target.value || 'All')}
+            style={{ border: 'none', background: 'transparent', color: 'var(--text-main)', outline: 'none', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}
+          />
+          <button 
+            className={`btn ${dateFilter === 'All' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ padding: '0.2rem 0.6rem', fontSize: '0.8rem' }}
+            onClick={() => setDateFilter('All')}
+          >
+            All Time
+          </button>
+        </div>
       </header>
 
       {/* Summary Row */}
-      <div className="history-summary-row">
+      <div className="history-summary-row" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <div className="summary-card card">
           <div className="summary-icon" style={{ background: 'rgba(76, 209, 55, 0.1)', color: 'var(--success)' }}>
-            <DollarSign size={20} />
+            <TrendingUp size={20} />
           </div>
           <div className="summary-info">
-            <span className="summary-label">Total Store Revenue</span>
+            <span className="summary-label">Total Income</span>
             <strong className="summary-value">₹{totalRevenue.toLocaleString()}</strong>
           </div>
         </div>
 
         <div className="summary-card card">
+          <div className="summary-icon" style={{ background: 'rgba(235, 77, 75, 0.1)', color: 'var(--danger)' }}>
+            <TrendingDown size={20} />
+          </div>
+          <div className="summary-info">
+            <span className="summary-label">Total Expenses (COGS)</span>
+            <strong className="summary-value">₹{totalExpenses.toLocaleString()}</strong>
+          </div>
+        </div>
+
+        <div className="summary-card card">
           <div className="summary-icon" style={{ background: 'rgba(9, 132, 227, 0.1)', color: 'var(--primary)' }}>
+            <DollarSign size={20} />
+          </div>
+          <div className="summary-info">
+            <span className="summary-label">Net Profit</span>
+            <strong className="summary-value" style={{ color: netProfit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+              ₹{netProfit.toLocaleString()}
+            </strong>
+          </div>
+        </div>
+
+        <div className="summary-card card">
+          <div className="summary-icon" style={{ background: 'rgba(108, 92, 231, 0.1)', color: '#6c5ce7' }}>
             <ShoppingBag size={20} />
           </div>
           <div className="summary-info">
-            <span className="summary-label">Total Store Orders</span>
-            <strong className="summary-value">{totalOrders} Orders</strong>
+            <span className="summary-label">Orders Count</span>
+            <strong className="summary-value">{totalOrders}</strong>
           </div>
         </div>
       </div>
