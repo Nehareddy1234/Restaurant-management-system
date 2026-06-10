@@ -3,7 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { TrendingUp, DollarSign, ShoppingBag, Percent, Users, Award, TrendingDown, Clock, Store, Calendar, Sparkles } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingBag, Percent, Users, Award, TrendingDown, Clock, Store, Calendar, Sparkles, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Analytics.css'; // Reusing the same styles as Restaurant Analytics
 
@@ -55,21 +55,22 @@ export default function GroceryAnalytics() {
     : storeOrders.filter(o => getActualDate(o.date) === dateFilter);
 
   // 1. Calculate General Financial Metrics
-  const totalRevenue = filteredHistory.reduce((sum, order) => sum + order.total, 0);
+  const totalRevenue = filteredHistory.reduce((sum, order) => sum + (order.totalAmount || order.total || 0), 0);
   const totalOrders = filteredHistory.length;
   const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
   
-  // Grocery store margin is typically lower, around 20%
-  const estimatedCOGS = totalRevenue * 0.80;
-  const netProfit = totalRevenue - estimatedCOGS;
-  const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
-
+  let actualCOGS = 0;
   let totalItemsSold = 0;
   filteredHistory.forEach(order => {
     order.items.forEach(item => {
       totalItemsSold += item.quantity;
+      actualCOGS += (item.buyingCost || 0) * item.quantity;
     });
   });
+
+  const netProfit = totalRevenue - actualCOGS;
+  const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
+
 
   // Find most popular category
   const categoryCounts = {};
@@ -106,16 +107,21 @@ export default function GroceryAnalytics() {
 
   // 3. Prepare Data: Revenue Trends (last 7 days including today)
   const revenueByDate = {};
+  const costByDate = {};
+  
   storeOrders.forEach(order => {
     const d = order.date || 'Today';
-    revenueByDate[d] = (revenueByDate[d] || 0) + order.total;
+    revenueByDate[d] = (revenueByDate[d] || 0) + (order.totalAmount || order.total || 0);
+    order.items.forEach(item => {
+      costByDate[d] = (costByDate[d] || 0) + ((item.buyingCost || 0) * item.quantity);
+    });
   });
 
   const revenueChartData = Object.entries(revenueByDate)
     .map(([date, revenue]) => ({
       date: date === 'Today' ? 'Today' : date.substring(5),
       Revenue: revenue,
-      Profit: Math.round(revenue * 0.20) // 20% profit margin estimation
+      Profit: Math.round(revenue - (costByDate[date] || 0)) // Actual profit
     }))
     .reverse();
 
@@ -125,10 +131,11 @@ export default function GroceryAnalytics() {
   // 5. Payment Methods
   const paymentMethodData = { Cash: 0, Card: 0, UPI: 0 };
   filteredHistory.forEach(order => {
+    const total = order.totalAmount || order.total || 0;
     if (order.paymentMethod && paymentMethodData[order.paymentMethod] !== undefined) {
-      paymentMethodData[order.paymentMethod] += order.total;
+      paymentMethodData[order.paymentMethod] += total;
     } else {
-      paymentMethodData['Cash'] += order.total;
+      paymentMethodData['Cash'] += total;
     }
   });
 
@@ -204,8 +211,9 @@ export default function GroceryAnalytics() {
             <Percent size={24} />
           </div>
           <div className="kpi-content">
-            <span className="kpi-label">Est. Net Profit ({profitMargin}%)</span>
+            <span className="kpi-label">Net Profit ({profitMargin}%)</span>
             <h2 className="kpi-value">₹{Math.round(netProfit).toLocaleString()}</h2>
+            <span className="kpi-trend" style={{ color: netProfit > 0 ? 'var(--success)' : 'var(--danger)', fontSize: '0.75rem' }}>Buying Cost: ₹{Math.round(actualCOGS).toLocaleString()}</span>
           </div>
         </div>
 
@@ -399,6 +407,44 @@ export default function GroceryAnalytics() {
           </div>
         )}
       </div>
+      {/* Low Stock Alerts */}
+      {(() => {
+        const lowStockItems = storeInventory.filter(item => item.stock < (item.lowStockThreshold || 10));
+        if (lowStockItems.length === 0) return null;
+        return (
+          <div className="chart-card card" style={{ marginTop: '1.5rem' }}>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <AlertTriangle size={20} style={{ color: 'var(--danger)' }} /> Low Stock Alerts ({lowStockItems.length} items)
+            </h2>
+            <div style={{ overflowX: 'auto', marginTop: '0.75rem' }}>
+              <table className="history-table" style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left' }}>Item</th>
+                    <th>Category</th>
+                    <th>Current Stock</th>
+                    <th>Threshold</th>
+                    <th>Buying Cost</th>
+                    <th>Selling Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lowStockItems.map(item => (
+                    <tr key={item.id}>
+                      <td style={{ textAlign: 'left', fontWeight: 600 }}>{item.name}</td>
+                      <td><span className="badge-cat">{item.category}</span></td>
+                      <td><strong style={{ color: 'var(--danger)' }}>{item.stock}</strong></td>
+                      <td>{item.lowStockThreshold || 10}</td>
+                      <td>₹{item.buyingCost || 0}</td>
+                      <td>₹{item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

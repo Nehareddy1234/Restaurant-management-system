@@ -56,15 +56,24 @@ const USERS = [
     displayName: 'Table 2',
     avatar: 'T2',
   },
+  {
+    id: 'demo-7',
+    username: 'store_manager',
+    password: 'store123',
+    role: 'store_manager',
+    displayName: 'Store Manager',
+    avatar: 'SM',
+  },
 ];
 
 // ─────────────────────────────────────────────────────
 //  Role-based allowed nav paths
 // ─────────────────────────────────────────────────────
 export const ROLE_NAV = {
-  admin: ['/', '/pos', '/orders', '/tables', '/menu', '/grocery', '/history', '/pay-later', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/history', '/store/analytics'],
-  account_manager: ['/', '/pos', '/orders', '/tables', '/menu', '/history', '/pay-later', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/history', '/store/analytics'],
+  admin: ['/', '/pos', '/orders', '/tables', '/menu', '/grocery', '/history', '/pay-later', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/suppliers', '/store/history', '/store/analytics'],
+  account_manager: ['/', '/pos', '/orders', '/tables', '/menu', '/history', '/pay-later', '/expenses', '/analytics', '/store/pos', '/store/inventory', '/store/suppliers', '/store/history', '/store/analytics'],
   waiter: ['/pos', '/orders', '/tables', '/grocery', '/store/pos'],
+  store_manager: ['/store/pos', '/store/inventory', '/store/suppliers', '/store/history', '/store/analytics'],
   customer: ['/customer-menu'],
 };
 

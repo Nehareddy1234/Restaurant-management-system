@@ -18,6 +18,7 @@ import {
   User,
   DollarSign,
   CreditCard,
+  Truck,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +40,7 @@ const ALL_RESTAURANT_NAV = [
 const ALL_GROCERY_NAV = [
   { path: '/store/pos', icon: <ShoppingCart size={20} />, label: 'Store POS' },
   { path: '/store/inventory', icon: <PackageSearch size={20} />, label: 'Inventory' },
+  { path: '/store/suppliers', icon: <Truck size={20} />, label: 'Suppliers' },
   { path: '/store/history', icon: <History size={20} />, label: 'Sales History' },
   { path: '/store/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
 ];
@@ -47,6 +49,7 @@ const ROLE_COLORS = {
   admin: '#e84118',
   account_manager: '#6f42c1',
   waiter: '#17a2b8',
+  store_manager: '#e67e22',
   customer: '#28a745',
 };
 
@@ -54,6 +57,7 @@ const ROLE_LABELS = {
   admin: 'Admin',
   account_manager: 'Accounts',
   waiter: 'Waiter',
+  store_manager: 'Store Mgr',
   customer: 'Customer',
 };
 
@@ -68,7 +72,7 @@ export default function Sidebar() {
   const restaurantNavItems = ALL_RESTAURANT_NAV.filter(item => hasAccess(item.path));
   const groceryNavItems = ALL_GROCERY_NAV.filter(item => hasAccess(item.path));
 
-  const activeNavItems = appMode === 'restaurant' ? restaurantNavItems : groceryNavItems;
+  const activeNavItems = (appMode === 'restaurant' && role !== 'store_manager') ? restaurantNavItems : groceryNavItems;
   const roleColor = ROLE_COLORS[role] || '#e84118';
   const roleLabel = ROLE_LABELS[role] || role;
 
@@ -102,14 +106,16 @@ export default function Sidebar() {
       {/* Mode Switcher — shown for non-customer roles */}
       {role !== 'customer' && (
         <div className="mode-switcher" style={{ padding: '0 1rem', marginBottom: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-          <button 
-            className={'btn ' + (appMode === 'restaurant' ? 'btn-primary' : 'btn-outline')}
-            onClick={() => setAppMode('restaurant')}
-            style={{ width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: sidebarMinimized ? 'center' : 'flex-start', gap: '0.5rem', padding: '0.5rem' }}
-            title="Restaurant Mode"
-          >
-            <Utensils size={18} /> {!sidebarMinimized && 'Restaurant'}
-          </button>
+          {role !== 'store_manager' && (
+            <button 
+              className={'btn ' + (appMode === 'restaurant' ? 'btn-primary' : 'btn-outline')}
+              onClick={() => setAppMode('restaurant')}
+              style={{ width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: sidebarMinimized ? 'center' : 'flex-start', gap: '0.5rem', padding: '0.5rem' }}
+              title="Restaurant Mode"
+            >
+              <Utensils size={18} /> {!sidebarMinimized && 'Restaurant'}
+            </button>
+          )}
           <button 
             className={'btn ' + (appMode === 'grocery' ? 'btn-primary' : 'btn-outline')}
             onClick={() => setAppMode('grocery')}

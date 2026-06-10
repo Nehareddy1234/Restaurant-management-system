@@ -104,6 +104,134 @@ fastify.put('/tables/:id/status', async (request, reply) => {
   reply.send(updated);
 });
 
+// ---- Grocery Store Routes ------------------------------------------
+
+fastify.get('/store-products', async () => {
+  return prisma.storeProduct.findMany();
+});
+
+fastify.post('/store-products', async (request, reply) => {
+  const data = request.body as any;
+  const product = await prisma.storeProduct.create({ data });
+  reply.send(product);
+});
+
+fastify.put('/store-products/:id', async (request, reply) => {
+  const { id } = request.params as { id: string };
+  const data = request.body as any;
+  const product = await prisma.storeProduct.update({
+    where: { id },
+    data
+  });
+  reply.send(product);
+});
+
+fastify.delete('/store-products/:id', async (request, reply) => {
+  const { id } = request.params as { id: string };
+  await prisma.storeProduct.delete({ where: { id } });
+  reply.send({ success: true });
+});
+
+fastify.get('/store-orders', async () => {
+  return prisma.storeOrder.findMany({ include: { items: true } });
+});
+
+fastify.post('/store-orders', async (request, reply) => {
+  const { items, totalAmount, paymentMethod } = request.body as any;
+  
+  const orderNumber = Date.now().toString().slice(-6);
+  
+  const order = await prisma.$transaction(async (tx) => {
+    const newOrder = await tx.storeOrder.create({
+      data: {
+        orderNumber,
+        totalAmount,
+        paymentMethod,
+        items: {
+          create: items.map((i: any) => ({
+            productId: i.id,
+            quantity: i.quantity,
+            price: i.price,
+            buyingCost: i.buyingCost || 0
+          }))
+        }
+      },
+      include: { items: true }
+    });
+
+    // Reduce stock
+    for (const item of items) {
+      await tx.storeProduct.update({
+        where: { id: item.id },
+        data: { stock: { decrement: item.quantity } }
+      });
+    }
+
+    return newOrder;
+  });
+
+  reply.send(order);
+});
+
+fastify.get('/supplier-orders', async () => {
+  return prisma.supplierOrder.findMany({ include: { items: true } });
+});
+
+fastify.post('/supplier-orders', async (request, reply) => {
+  const { supplierName, totalAmount, items } = request.body as any;
+  const order = await prisma.supplierOrder.create({
+    data: {
+      supplierName,
+      totalAmount,
+      items: {
+        create: items.map((i: any) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+          buyingCost: i.buyingCost
+        }))
+      }
+    },
+    include: { items: true }
+  });
+  reply.send(order);
+});
+
+fastify.put('/supplier-orders/:id', async (request, reply) => {
+  const { id } = request.params as { id: string };
+  const { status, paymentStatus } = request.body as any;
+  
+  const updateData: any = {};
+  if (status) {
+    updateData.status = status;
+    if (status === 'Received') updateData.receiveDate = new Date();
+  }
+  if (paymentStatus) {
+    updateData.paymentStatus = paymentStatus;
+    if (paymentStatus === 'Paid') updateData.paymentDate = new Date();
+  }
+  
+  const order = await prisma.supplierOrder.update({
+    where: { id },
+    data: updateData,
+    include: { items: true }
+  });
+  
+  // If marked as received, update inventory stock and buying cost
+  if (status === 'Received') {
+    for (const item of order.items) {
+      await prisma.storeProduct.update({
+        where: { id: item.productId },
+        data: { 
+          stock: { increment: item.quantity },
+          buyingCost: item.buyingCost
+        }
+      });
+    }
+  }
+
+  reply.send(order);
+});
+
 // ---- Export for Vercel ------------------------------------------
 export default async (req, res) => {
   await fastify.ready();

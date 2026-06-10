@@ -13,6 +13,7 @@ export default function GroceryInventory() {
   const [barcode, setBarcode] = useState('');
   const [category, setCategory] = useState('Staples');
   const [price, setPrice] = useState('');
+  const [buyingCost, setBuyingCost] = useState('');
   const [stock, setStock] = useState('');
 
   const filteredInventory = storeInventory.filter(item => 
@@ -30,6 +31,7 @@ export default function GroceryInventory() {
       barcode: barcode || Date.now().toString(),
       category,
       price: parseFloat(price),
+      buyingCost: parseFloat(buyingCost) || 0,
       stock: parseInt(stock, 10),
       image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200'
     });
@@ -37,6 +39,7 @@ export default function GroceryInventory() {
     setName('');
     setBarcode('');
     setPrice('');
+    setBuyingCost('');
     setStock('');
   };
 
@@ -71,7 +74,9 @@ export default function GroceryInventory() {
                 <th style={{ textAlign: 'left' }}>Item</th>
                 <th>Barcode/SKU</th>
                 <th>Category</th>
-                <th>Price</th>
+                <th>Buying Cost</th>
+                <th>Selling Price</th>
+                <th>Profit Margin</th>
                 <th>Stock Level</th>
               </tr>
             </thead>
@@ -84,7 +89,13 @@ export default function GroceryInventory() {
                   </td>
                   <td className="text-muted">{item.barcode}</td>
                   <td><span className="badge-cat">{item.category}</span></td>
+                  <td><strong>₹{item.buyingCost || 0}</strong></td>
                   <td><strong>₹{item.price}</strong></td>
+                  <td>
+                    <span style={{ color: item.price > (item.buyingCost || 0) ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
+                      {item.buyingCost ? (((item.price - item.buyingCost) / item.buyingCost) * 100).toFixed(1) : 100}%
+                    </span>
+                  </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <input 
@@ -93,7 +104,7 @@ export default function GroceryInventory() {
                         min="0"
                         onChange={(e) => {
                           const val = parseInt(e.target.value, 10);
-                          updateStoreItemStock(item.id, isNaN(val) ? 0 : val);
+                          updateStoreItemStock(item.id, isNaN(val) ? 0 : val, item.buyingCost);
                         }}
                         style={{
                           width: '70px',
@@ -104,10 +115,13 @@ export default function GroceryInventory() {
                           fontWeight: 700,
                           fontSize: '0.95rem',
                           outline: 'none',
-                          color: item.stock < 10 ? 'var(--danger)' : 'var(--text-main)',
-                          background: '#fff',
+                          color: item.stock < (item.lowStockThreshold || 10) ? '#fff' : 'var(--text-main)',
+                          background: item.stock < (item.lowStockThreshold || 10) ? 'var(--danger)' : '#fff',
                         }}
                       />
+                      {item.stock < (item.lowStockThreshold || 10) && (
+                        <span style={{ marginLeft: '0.5rem', color: 'var(--danger)', fontSize: '0.75rem', fontWeight: 600 }}>Low Stock</span>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -149,7 +163,11 @@ export default function GroceryInventory() {
               </datalist>
             </div>
             <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>Price (₹)</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>Buying Cost (₹)</label>
+              <input type="number" min="0" placeholder="0.00" value={buyingCost} onChange={e => setBuyingCost(e.target.value)} style={{ padding: '0.7rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.95rem', outline: 'none' }} />
+            </div>
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>Selling Price (₹)</label>
               <input type="number" min="0" placeholder="0.00" value={price} onChange={e => setPrice(e.target.value)} required style={{ padding: '0.7rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.95rem', outline: 'none' }} />
             </div>
             <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>

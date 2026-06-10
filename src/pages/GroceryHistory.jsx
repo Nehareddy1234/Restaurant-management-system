@@ -9,12 +9,12 @@ export default function GroceryHistory() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const filteredHistory = storeOrders.filter(order => {
-  const idMatch = order.id.toLowerCase().includes(searchQuery.toLowerCase());
-  const numberMatch = order.orderNumber && order.orderNumber.toString().includes(searchQuery);
-  return idMatch || numberMatch;
-});
+    const idMatch = (order.id || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const numberMatch = order.orderNumber && order.orderNumber.toString().includes(searchQuery);
+    return idMatch || numberMatch;
+  });
 
-  const totalRevenue = storeOrders.reduce((sum, order) => sum + order.total, 0);
+  const totalRevenue = storeOrders.reduce((sum, order) => sum + (order.totalAmount || order.total || 0), 0);
   const totalOrders = storeOrders.length;
 
   return (
@@ -81,29 +81,34 @@ export default function GroceryHistory() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredHistory.map(order => (
+                  {filteredHistory.map(order => {
+                    const dateObj = new Date(order.orderDate || order.createdAt || Date.now());
+                    const dateStr = dateObj.toLocaleDateString();
+                    const timeStr = dateObj.toLocaleTimeString();
+                    return (
                     <tr key={order.id}>
-                      <td><strong className="order-id">#{order.orderNumber}</strong> <span className="text-muted" style={{ fontSize: '0.75rem' }}>({order.id.slice(0, 8)})</span></td>
+                      <td><strong className="order-id">#{order.orderNumber}</strong> <span className="text-muted" style={{ fontSize: '0.75rem' }}>({order.id ? order.id.slice(0, 8) : ''})</span></td>
                       <td>
                         <div className="date-time">
-                          <span>{order.date}</span>
-                          <span className="text-muted" style={{ fontSize: '0.75rem' }}>at {order.time}</span>
+                          <span>{dateStr}</span>
+                          <span className="text-muted" style={{ fontSize: '0.75rem' }}>at {timeStr}</span>
                         </div>
                       </td>
                       <td><span className="badge-cat">{order.paymentMethod}</span></td>
                       <td>{order.items?.length || 0} items</td>
-                      <td><strong className="price-label">₹{order.total}</strong></td>
+                      <td><strong className="price-label">₹{order.totalAmount || order.total}</strong></td>
                       <td>
                         <button
                           className="btn btn-outline detail-btn"
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => setSelectedOrder({ ...order, dateStr, timeStr })}
                           style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                         >
                           <Eye size={14} /> View Details
                         </button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -133,7 +138,10 @@ export default function GroceryHistory() {
                   <ul className="modal-items-list" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {selectedOrder.items?.map((item, idx) => (
                       <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                        <span>{item.name} x{item.quantity}</span>
+                        <span>
+                          {item.name || item.product?.name || 'Item'} x{item.quantity}
+                          {item.buyingCost > 0 && <span className="text-muted" style={{ fontSize: '0.75rem', marginLeft: '0.5rem' }}>(Cost: ₹{item.buyingCost})</span>}
+                        </span>
                         <strong>₹{item.price * item.quantity}</strong>
                       </li>
                     ))}
@@ -142,7 +150,7 @@ export default function GroceryHistory() {
 
                 <div className="detail-row total" style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
                   <span>Grand Total</span>
-                  <strong>₹{selectedOrder.total}</strong>
+                  <strong>₹{selectedOrder.totalAmount || selectedOrder.total}</strong>
                 </div>
               </div>
             </div>

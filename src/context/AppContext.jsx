@@ -86,6 +86,7 @@ export function AppProvider({ children }) {
   const [groceryItems, setGroceryItems] = useState([]);
   const [storeInventory, setStoreInventory] = useState([]);
   const [storeOrders, setStoreOrders] = useState([]);
+  const [supplierOrders, setSupplierOrders] = useState([]);
   const [dataErrors, setDataErrors] = useState({});
   const isRefreshingRef = useRef(false);
   const pendingClosedOrderIdsRef = useRef(new Set());
@@ -99,6 +100,9 @@ export function AppProvider({ children }) {
       ['orders', `${API_BASE}/api/orders`],
       ['grocery', `${API_BASE}/api/grocery`],
       ['categories', `${API_BASE}/api/menu-categories`],
+      ['storeInventory', `${API_BASE}/api/store-products`],
+      ['storeOrders', `${API_BASE}/api/store-orders`],
+      ['supplierOrders', `${API_BASE}/api/supplier-orders`],
     ];
 
     for (const [key, endpoint] of endpoints) {
@@ -133,6 +137,9 @@ export function AppProvider({ children }) {
     }
     if (responses.grocery) setGroceryItems(responses.grocery);
     if (responses.categories) setFoodCategories(responses.categories);
+    if (responses.storeInventory) setStoreInventory(responses.storeInventory);
+    if (responses.storeOrders) setStoreOrders(responses.storeOrders);
+    if (responses.supplierOrders) setSupplierOrders(responses.supplierOrders);
   };
 
   // Fetch initial data from backend (fallback to defaults if backend not ready)
@@ -675,30 +682,49 @@ export function AppProvider({ children }) {
     setGroceryItems(prev => prev.filter(item => !item.purchased));
   };
 
-  const addStoreItem = (item) => {
-    setStoreInventory(prev => [{ ...item, id: `G${Date.now()}` }, ...prev]);
+  const addStoreItem = async (item) => {
+    const tempId = `G${Date.now()}`;
+    setStoreInventory(prev => [{ ...item, id: tempId }, ...prev]);
+    try {
+      const res = await fetch(`${API_BASE}/api/store-products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...item, id: tempId })
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setStoreInventory(prev => prev.map(i => i.id === tempId ? saved : i));
+      }
+    } catch (e) { console.error('Failed to add store item', e); }
   };
 
-  const updateStoreItemStock = (id, newStock) => {
-    setStoreInventory(prev => prev.map(item => item.id === id ? { ...item, stock: Math.max(0, newStock) } : item));
+  const updateStoreItemStock = async (id, newStock, buyingCost = undefined) => {
+    setStoreInventory(prev => prev.map(item => item.id === id ? { ...item, stock: Math.max(0, newStock), ...(buyingCost !== undefined && { buyingCost }) } : item));
+    try {
+      await fetch(`${API_BASE}/api/store-products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stock: Math.max(0, newStock), ...(buyingCost !== undefined && { buyingCost }) })
+      });
+    } catch (e) { console.error('Failed to update stock', e); }
   };
   
-  const checkoutStoreOrder = (cartItems, paymentMethod = 'Cash') => {
+  const checkoutStoreOrder = async (cartItems, paymentMethod = 'Cash') => {
     const now = new Date();
+    const tempId = `GRO-${Date.now()}`;
     const order = {
-      id: `GRO-${Date.now()}`,
+      id: tempId,
       orderNumber: '...',
       items: cartItems.map(item => ({
         id: item.id,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
+        buyingCost: item.buyingCost || 0
       })),
-      total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      totalAmount: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
       paymentMethod,
-      date: formatIstDate(now),
-      time: formatIstTime(now),
-      createdAt: now.toISOString(),
+      orderDate: now.toISOString()
     };
 
     setStoreOrders(prev => [order, ...prev]);
@@ -709,18 +735,87 @@ export function AppProvider({ children }) {
         : product;
     }));
 
-    return order.id;
+    try {
+      const res = await fetch(`${API_BASE}/api/store-orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setStoreOrders(prev => prev.map(o => o.id === tempId ? saved : o));
+      }
+    } catch (e) { console.error('Failed to checkout store order', e); }
+
+    return tempId;
+  };
+
+  const placeSupplierOrder = async (supplierName, cartItems) => {
+    const tempId = `SUP-${Date.now()}`;
+    const order = {
+      id: tempId,
+      supplierName,
+      status: 'Ordered',
+      paymentStatus: 'Unpaid',
+      orderDate: new Date().toISOString(),
+      items: cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        buyingCost: item.buyingCost || 0,
+        product: { name: item.name } // for UI optimism
+      })),
+      totalAmount: cartItems.reduce((sum, item) => sum + (item.buyingCost || 0) * item.quantity, 0)
+    };
+    
+    setSupplierOrders(prev => [order, ...prev]);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/supplier-orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setSupplierOrders(prev => prev.map(o => o.id === tempId ? saved : o));
+      }
+    } catch (e) { console.error('Failed to place supplier order', e); }
+  };
+
+  const updateSupplierOrder = async (orderId, updates) => {
+    setSupplierOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
+    
+    if (updates.status === 'Received') {
+      const order = supplierOrders.find(o => o.id === orderId);
+      if (order) {
+        setStoreInventory(prev => prev.map(product => {
+          const item = order.items.find(i => i.productId === product.id);
+          if (item) {
+            return { ...product, stock: product.stock + item.quantity, buyingCost: item.buyingCost };
+          }
+          return product;
+        }));
+      }
+    }
+
+    try {
+      await fetch(`${API_BASE}/api/supplier-orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+    } catch (e) { console.error('Failed to update supplier order', e); }
   };
 
   return (
     <AppContext.Provider value={{
       appMode, setAppMode,
-      tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, dataErrors, foodCategories,
+      tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, supplierOrders, dataErrors, foodCategories,
       refreshData,
       placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, logOldSettlement, updateOrderItemQuantity, markOrderReady, closeOrder, deleteOrder, freeTable, updateTableStatus,
       addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, addFoodCategory, removeFoodCategory,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
-      addStoreItem, updateStoreItemStock, checkoutStoreOrder,
+      addStoreItem, updateStoreItemStock, checkoutStoreOrder, placeSupplierOrder, updateSupplierOrder,
       sidebarOpen, sidebarMinimized, toggleSidebarMinimized, toggleSidebarOpen, closeSidebar,
       formatIstDate, formatIstTime, getIstDateInputValue
     }}>

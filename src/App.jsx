@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import { AppProvider, useApp } from './context/AppContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth, ROLE_NAV } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import POS from './pages/POS';
 import Orders from './pages/Orders';
@@ -17,6 +17,7 @@ import GroceryInventory from './pages/GroceryInventory';
 import GroceryPOS from './pages/GroceryPOS';
 import GroceryHistory from './pages/GroceryHistory';
 import GroceryAnalytics from './pages/GroceryAnalytics';
+import GrocerySupplier from './pages/GrocerySupplier';
 import Login from './pages/Login';
 import CustomerMenu from './pages/CustomerMenu';
 import { Menu as HamburgerIcon } from 'lucide-react';
@@ -37,7 +38,10 @@ function ProtectedRoute({ children, path }) {
   // Check if this role has access to the requested path
   if (path && !hasAccess(path)) {
     // Redirect to first allowed page for this role
-    return <Navigate to="/" replace />;
+    const fallback = ROLE_NAV[currentUser.role]?.[0] || '/';
+    // Prevent infinite loop if somehow fallback is also not allowed or matches current path
+    if (fallback === path) return children;
+    return <Navigate to={fallback} replace />;
   }
 
   return children;
@@ -101,11 +105,12 @@ function AppContent() {
           {/* Grocery Store Routes */}
           <Route path="/store/pos"       element={<ProtectedRoute path="/store/pos"><GroceryPOS /></ProtectedRoute>} />
           <Route path="/store/inventory" element={<ProtectedRoute path="/store/inventory"><GroceryInventory /></ProtectedRoute>} />
+          <Route path="/store/suppliers" element={<ProtectedRoute path="/store/suppliers"><GrocerySupplier /></ProtectedRoute>} />
           <Route path="/store/history"   element={<ProtectedRoute path="/store/history"><GroceryHistory /></ProtectedRoute>} />
           <Route path="/store/analytics" element={<ProtectedRoute path="/store/analytics"><GroceryAnalytics /></ProtectedRoute>} />
 
           <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="*"      element={<Navigate to="/" replace />} />
+          <Route path="*"      element={<Navigate to={currentUser?.role === 'store_manager' ? '/store/pos' : '/'} replace />} />
         </Routes>
       </main>
     </div>

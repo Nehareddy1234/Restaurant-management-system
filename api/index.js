@@ -1082,6 +1082,193 @@ export default async function handler(req, res) {
 
     /**
      * =========================================================
+     * STORE PRODUCTS
+     * =========================================================
+     */
+    if (path.startsWith('/api/store-products')) {
+      const idPart = path.replace('/api/store-products', '').replace(/^\//, '');
+      const id = idPart || null;
+
+      if (method === 'GET') {
+        const products = await prisma.storeProduct.findMany({ orderBy: { id: 'desc' } });
+        return send(res, 200, products);
+      }
+
+      if (method === 'POST') {
+        const body = await getJsonBody(req);
+        const created = await prisma.storeProduct.create({
+          data: {
+            name: body.name,
+            barcode: body.barcode || null,
+            category: body.category || 'General',
+            price: Number(body.price) || 0,
+            buyingCost: Number(body.buyingCost) || 0,
+            stock: Number(body.stock) || 0,
+            lowStockThreshold: Number(body.lowStockThreshold) || 10,
+            image: body.image || null,
+          }
+        });
+        return send(res, 201, created);
+      }
+
+      if (method === 'PUT' && id) {
+        const body = await getJsonBody(req);
+        const data = {};
+        if (body.name !== undefined) data.name = body.name;
+        if (body.barcode !== undefined) data.barcode = body.barcode;
+        if (body.category !== undefined) data.category = body.category;
+        if (body.price !== undefined) data.price = Number(body.price);
+        if (body.buyingCost !== undefined) data.buyingCost = Number(body.buyingCost);
+        if (body.stock !== undefined) data.stock = Number(body.stock);
+        if (body.lowStockThreshold !== undefined) data.lowStockThreshold = Number(body.lowStockThreshold);
+        if (body.image !== undefined) data.image = body.image;
+        
+        const updated = await prisma.storeProduct.update({
+          where: { id },
+          data,
+        });
+        return send(res, 200, updated);
+      }
+
+      if (method === 'DELETE' && id) {
+        await prisma.storeProduct.delete({ where: { id } });
+        return send(res, 200, { success: true });
+      }
+
+      return send(res, 405, { error: 'Method not allowed' });
+    }
+
+    /**
+     * =========================================================
+     * STORE ORDERS
+     * =========================================================
+     */
+    if (path.startsWith('/api/store-orders')) {
+      if (method === 'GET') {
+        const orders = await prisma.storeOrder.findMany({ include: { items: true }, orderBy: { orderDate: 'desc' } });
+        return send(res, 200, orders);
+      }
+
+      if (method === 'POST') {
+        const body = await getJsonBody(req);
+        const { items, totalAmount, paymentMethod, orderDate } = body;
+        const orderNumber = Date.now().toString().slice(-6);
+
+        const created = await prisma.$transaction(async (tx) => {
+          const newOrder = await tx.storeOrder.create({
+            data: {
+              id: body.id || undefined, // Allow frontend temp ID
+              orderNumber,
+              totalAmount,
+              paymentMethod,
+              orderDate: orderDate ? new Date(orderDate) : new Date(),
+              items: {
+                create: items.map(i => ({
+                  productId: i.id || i.productId,
+                  quantity: i.quantity,
+                  price: i.price,
+                  buyingCost: i.buyingCost || 0
+                }))
+              }
+            },
+            include: { items: true }
+          });
+
+          for (const item of items) {
+            await tx.storeProduct.update({
+              where: { id: item.id || item.productId },
+              data: { stock: { decrement: item.quantity } }
+            });
+          }
+
+          return newOrder;
+        });
+
+        return send(res, 201, created);
+      }
+
+      return send(res, 405, { error: 'Method not allowed' });
+    }
+
+    /**
+     * =========================================================
+     * SUPPLIER ORDERS
+     * =========================================================
+     */
+    if (path.startsWith('/api/supplier-orders')) {
+      const idPart = path.replace('/api/supplier-orders', '').replace(/^\//, '');
+      const id = idPart || null;
+
+      if (method === 'GET') {
+        const orders = await prisma.supplierOrder.findMany({ include: { items: { include: { product: true } } }, orderBy: { orderDate: 'desc' } });
+        return send(res, 200, orders);
+      }
+
+      if (method === 'POST') {
+        const body = await getJsonBody(req);
+        const { supplierName, totalAmount, items, id: frontendId } = body;
+        
+        const created = await prisma.supplierOrder.create({
+          data: {
+            id: frontendId || undefined,
+            supplierName,
+            totalAmount,
+            items: {
+              create: items.map(i => ({
+                productId: i.productId,
+                quantity: i.quantity,
+                buyingCost: i.buyingCost
+              }))
+            }
+          },
+          include: { items: { include: { product: true } } }
+        });
+        return send(res, 201, created);
+      }
+
+      if (method === 'PUT' && id) {
+        const body = await getJsonBody(req);
+        const { status, paymentStatus } = body;
+        
+        const updateData = {};
+        if (status) {
+          updateData.status = status;
+          if (status === 'Received') updateData.receiveDate = new Date();
+        }
+        if (paymentStatus) {
+          updateData.paymentStatus = paymentStatus;
+          if (paymentStatus === 'Paid') updateData.paymentDate = new Date();
+        }
+        
+        const updated = await prisma.$transaction(async (tx) => {
+          const order = await tx.supplierOrder.update({
+            where: { id },
+            data: updateData,
+            include: { items: { include: { product: true } } }
+          });
+          
+          if (status === 'Received') {
+            for (const item of order.items) {
+              await tx.storeProduct.update({
+                where: { id: item.productId },
+                data: { 
+                  stock: { increment: item.quantity },
+                  buyingCost: item.buyingCost
+                }
+              });
+            }
+          }
+          return order;
+        });
+
+        return send(res, 200, updated);
+      }
+
+      return send(res, 405, { error: 'Method not allowed' });
+    }
+
+    /**
+     * =========================================================
      * 404
      * =========================================================
      */

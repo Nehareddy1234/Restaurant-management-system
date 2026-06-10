@@ -85,12 +85,58 @@ model Expense {
 }
 
 model StoreProduct {
-  id       String  @id
-  name     String
-  category String
-  price    Int
-  stock    Int
-  image    String?
+  id                String  @id
+  name              String
+  category          String
+  price             Int
+  buyingCost        Int?    @default(0)
+  stock             Int
+  lowStockThreshold Int                 @default(10)
+  image             String?
+  supplierItems     SupplierOrderItem[]
+  storeOrderItems   StoreOrderItem[]
+}
+
+model SupplierOrder {
+  id            String              @id @default(uuid())
+  supplierName  String
+  status        String              @default("Ordered") // Ordered, Received
+  totalAmount   Int
+  paymentStatus String              @default("Unpaid") // Unpaid, Paid
+  orderDate     DateTime            @default(now())
+  receiveDate   DateTime?
+  paymentDate   DateTime?
+  items         SupplierOrderItem[]
+}
+
+model SupplierOrderItem {
+  id              Int           @id @default(autoincrement())
+  supplierOrderId String
+  productId       String
+  quantity        Int
+  buyingCost      Int
+  product         StoreProduct  @relation(fields: [productId], references: [id])
+  supplierOrder   SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
+}
+
+model StoreOrder {
+  id            String            @id @default(uuid())
+  orderNumber   String
+  totalAmount   Int
+  paymentMethod String            @default("Cash")
+  orderDate     DateTime          @default(now())
+  items         StoreOrderItem[]
+}
+
+model StoreOrderItem {
+  id            Int          @id @default(autoincrement())
+  storeOrderId  String
+  productId     String
+  quantity      Int
+  price         Int
+  buyingCost    Int          @default(0)
+  product       StoreProduct @relation(fields: [productId], references: [id])
+  storeOrder    StoreOrder   @relation(fields: [storeOrderId], references: [id], onDelete: Cascade)
 }
 
 model Profile {
