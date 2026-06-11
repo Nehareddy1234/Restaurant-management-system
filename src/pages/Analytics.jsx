@@ -227,16 +227,26 @@ export default function Analytics() {
   });
 
   filteredHistory.forEach(order => {
-    (order.itemList || []).forEach(itemStr => {
+    (order.itemList || []).forEach((itemStr, index) => {
       const parts = itemStr.split(' x');
       const namePart = parts[0].replace(/\s*\([^)]+\)/g, '').trim();
       const qty = parseInt(parts[1] || '1', 10);
       
+      let itemPrice = 0;
+      if (itemPerformance[namePart] && itemPerformance[namePart].price > 0) {
+        itemPrice = itemPerformance[namePart].price;
+      }
+      
+      // Use historical price from the order if available, which captures actual sold price
+      if (order.items && order.items[index] && order.items[index].price !== undefined) {
+        itemPrice = order.items[index].price;
+      }
+      
       if (itemPerformance[namePart]) {
         itemPerformance[namePart].qty += qty;
-        itemPerformance[namePart].revenue += (itemPerformance[namePart].price * qty);
+        itemPerformance[namePart].revenue += (itemPrice * qty);
       } else {
-        itemPerformance[namePart] = { name: namePart, qty, revenue: 0, category: 'Other', price: 0 };
+        itemPerformance[namePart] = { name: namePart, qty, revenue: (itemPrice * qty), category: 'Other', price: itemPrice };
       }
     });
   });
