@@ -11,12 +11,14 @@ const COLORS = ['#27ae60', '#f39c12', '#2980b9', '#8e44ad', '#e74c3c', '#16a085'
 const PIE_COLORS = ['#3498db', '#9b59b6', '#e74c3c', '#f1c40f', '#2ecc71'];
 
 function getIstDateKey(value = new Date()) {
+  const dateObj = new Date(value);
+  if (isNaN(dateObj)) return '';
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).formatToParts(value);
+  }).formatToParts(dateObj);
 
   const year = parts.find(part => part.type === 'year')?.value;
   const month = parts.find(part => part.type === 'month')?.value;

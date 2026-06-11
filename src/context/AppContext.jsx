@@ -212,7 +212,22 @@ export function AppProvider({ children }) {
       id,
       orderNumber: Date.now().toString().slice(-6),
       table: tableId ? `Table ${tables.find(t => t.id === tableId)?.name || tableId}` : 'Takeaway',
-      itemList: cartItems.map(item => `${item.name} x${item.quantity}`),
+      items: cartItems.map(item => ({
+        menuItemId: item.id,
+        quantity: item.quantity,
+        addOns: item.addOns || {},
+        price: item.price,
+        menuItem: item
+      })),
+      itemList: cartItems.map(item => {
+        let name = item.name;
+        const addOns = item.addOns || {};
+        const addOnParts = [];
+        if (addOns.Roti && addOns.Roti !== 0) addOnParts.push(`${addOns.Roti > 0 ? '+' : ''}${addOns.Roti} Roti`);
+        if (addOns.Curry && addOns.Curry !== 0) addOnParts.push(`${addOns.Curry > 0 ? '+' : ''}${addOns.Curry} Curry`);
+        if (addOnParts.length) name += ` (${addOnParts.join(', ')})`;
+        return `${name} x${item.quantity}`;
+      }),
       total,
       status: 'Preparing',
       paymentMethod,

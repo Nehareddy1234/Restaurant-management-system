@@ -11,12 +11,14 @@ const COLORS = ['#e84118', '#0097e6', '#8c7ae6', '#4cd137', '#e1b12c', '#00a8ff'
 const PIE_COLORS = ['#3498db', '#9b59b6', '#e74c3c', '#f1c40f', '#2ecc71'];
 
 function getIstDateKey(value = new Date()) {
+  const dateObj = new Date(value);
+  if (isNaN(dateObj)) return '';
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).formatToParts(value);
+  }).formatToParts(dateObj);
 
   const year = parts.find(part => part.type === 'year')?.value;
   const month = parts.find(part => part.type === 'month')?.value;
@@ -25,10 +27,12 @@ function getIstDateKey(value = new Date()) {
 }
 
 function getIstDayIndex(value = new Date()) {
+  const dateObj = new Date(value);
+  if (isNaN(dateObj)) return 0;
   const weekday = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Kolkata',
     weekday: 'short',
-  }).format(value);
+  }).format(dateObj);
   return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekday);
 }
 

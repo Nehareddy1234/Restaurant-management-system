@@ -40,18 +40,32 @@ export default function POS() {
         const order = activeOrders.find(o => o.id === editOrderId);
         if (order) {
           const reconstructedCart = [];
-          (order.itemList || []).forEach(itemStr => {
-            const match = itemStr.match(/(.+) x(\d+)$/);
-            if (match) {
-              const fullName = match[1];
-              const qty = parseInt(match[2], 10);
-              const cleanName = fullName.replace(/\s*\([^)]+\)/g, '').trim();
-              const menuItem = menuItems.find(item => item.name === cleanName);
+          if (order.items && order.items.length > 0) {
+            order.items.forEach(oi => {
+              const menuItem = menuItems.find(item => item.id === oi.menuItemId);
               if (menuItem) {
-                reconstructedCart.push({ ...menuItem, quantity: qty });
+                reconstructedCart.push({
+                  ...menuItem,
+                  quantity: oi.quantity,
+                  addOns: oi.addOns || {}
+                });
               }
-            }
-          });
+            });
+          } else {
+            // Fallback for older orders that might only have itemList strings
+            (order.itemList || []).forEach(itemStr => {
+              const match = itemStr.match(/(.+) x(\d+)$/);
+              if (match) {
+                const fullName = match[1];
+                const qty = parseInt(match[2], 10);
+                const cleanName = fullName.replace(/\s*\([^)]+\)/g, '').trim();
+                const menuItem = menuItems.find(item => item.name === cleanName);
+                if (menuItem) {
+                  reconstructedCart.push({ ...menuItem, quantity: qty });
+                }
+              }
+            });
+          }
           setCart(reconstructedCart);
           setCustomerName(order.customerName || '');
 
@@ -103,9 +117,25 @@ export default function POS() {
     );
   };
 
+  const updateAddOn = (id, type, delta) => {
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        const currentAddOns = item.addOns || {};
+        const currentVal = currentAddOns[type] || 0;
+        const newVal = currentVal + delta;
+        return {
+          ...item,
+          addOns: { ...currentAddOns, [type]: newVal }
+        };
+      }
+      return item;
+    }));
+  };
+
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const getAddOnTotal = (item) => ((item.addOns?.Roti || 0) * 15);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price + getAddOnTotal(item)) * item.quantity, 0);
   const parsedParcelCharge = Number(parcelCharge) || 0;
   const total = subtotal + parsedParcelCharge;
 
@@ -277,8 +307,8 @@ export default function POS() {
             </div>
           ) : (
             cart.map(item => {
-              const itemTotalPrice = item.price * item.quantity;
-
+              const itemTotalPrice = (item.price + getAddOnTotal(item)) * item.quantity;
+              
               return (
                 <div key={item.id} className="cart-item" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -295,6 +325,16 @@ export default function POS() {
                       <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); removeFromCart(item.id); }} className="delete-btn"><Trash2 size={14} /></button>
                     </div>
                   </div>
+                  {(item.name.toLowerCase().includes('combo') || item.name.toLowerCase().includes('thali') || item.name.toLowerCase().includes('roti')) && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.4rem', background: 'var(--bg-color)', padding: '0.4rem 0.6rem', borderRadius: '6px' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Extra / Less Roti (±₹15)</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); updateAddOn(item.id, 'Roti', -1); }} className="qty-btn" style={{ padding: '2px 4px' }}><Minus size={10} /></button>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, minWidth: '12px', textAlign: 'center' }}>{item.addOns?.Roti || 0}</span>
+                        <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); updateAddOn(item.id, 'Roti', 1); }} className="qty-btn" style={{ padding: '2px 4px' }}><Plus size={10} /></button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })
