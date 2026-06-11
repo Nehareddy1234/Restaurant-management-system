@@ -227,6 +227,12 @@ export default function Analytics() {
   });
 
   filteredHistory.forEach(order => {
+    // Calculate total quantity in the order for estimation fallback
+    let orderTotalQty = 0;
+    (order.itemList || []).forEach(itemStr => {
+      orderTotalQty += parseInt(itemStr.split(' x')[1] || '1', 10);
+    });
+
     (order.itemList || []).forEach((itemStr, index) => {
       const parts = itemStr.split(' x');
       const namePart = parts[0].replace(/\s*\([^)]+\)/g, '').trim();
@@ -237,9 +243,22 @@ export default function Analytics() {
         itemPrice = itemPerformance[namePart].price;
       }
       
-      // Use historical price from the order if available, which captures actual sold price
-      if (order.items && order.items[index] && order.items[index].price !== undefined) {
-        itemPrice = order.items[index].price;
+      // Use historical price from the order if available
+      if (order.items) {
+        const matchedItem = order.items.find(i => 
+          (i.menuItem && i.menuItem.name === namePart) || 
+          (i.name === namePart)
+        );
+        if (matchedItem && matchedItem.price > 0) {
+          itemPrice = matchedItem.price;
+        } else if (order.items[index] && order.items[index].price > 0) {
+          itemPrice = order.items[index].price;
+        }
+      }
+      
+      // Ultimate Fallback: Estimate price from the order total
+      if (itemPrice === 0 && order.total > 0 && orderTotalQty > 0) {
+        itemPrice = Math.round(order.total / orderTotalQty);
       }
       
       if (itemPerformance[namePart]) {
