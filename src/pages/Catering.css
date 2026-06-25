@@ -1,0 +1,48 @@
+.catering-page {
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.catering-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.catering-form-card {
+  background: var(--bg-card);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+}
+
+.catering-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.catering-form label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.catering-form input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-input);
+  color: var(--text-main);
+}
+
+.catering-form button {
+  width: 100%;
+  padding: 0.6rem;
+  font-weight: 600;
+}

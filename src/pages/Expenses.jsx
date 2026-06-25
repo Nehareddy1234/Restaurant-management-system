@@ -1,18 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import { 
-  DollarSign, 
-  Plus, 
-  Trash2, 
-  Search, 
-  Filter, 
-  Calendar, 
+import { useState, useRef } from 'react';
+import {
+  DollarSign,
+  Plus,
+  Trash2,
+  Search,
+  Filter,
+  Calendar,
   Tag,
   TrendingDown,
   FileText,
   AlertCircle,
-  Edit2
+  Edit2,
 } from 'lucide-react';
 import './Expenses.css';
+import { usePaginatedFetch } from '../hooks/usePaginatedFetch';
+import { useQueryClient } from '@tanstack/react-query';
+
 
 const isCapacitor = typeof window !== 'undefined' && window.Capacitor !== undefined;
 const API_BASE = isCapacitor ? 'https://nehaskitchen.vercel.app' : '';
@@ -34,10 +37,9 @@ function getIstDateInputValue(value = new Date()) {
     month: '2-digit',
     day: '2-digit',
   }).formatToParts(value);
-
-  const year = parts.find(part => part.type === 'year')?.value;
-  const month = parts.find(part => part.type === 'month')?.value;
-  const day = parts.find(part => part.type === 'day')?.value;
+  const year = parts.find((p) => p.type === 'year')?.value;
+  const month = parts.find((p) => p.type === 'month')?.value;
+  const day = parts.find((p) => p.type === 'day')?.value;
   return `${year}-${month}-${day}`;
 }
 
@@ -51,49 +53,24 @@ function formatIstDate(value) {
 }
 
 export default function Expenses() {
-  const [expenses, setExpenses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const queryClient = useQueryClient();
+
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  const { data: expenses = [], totalCount, isLoading, error } = usePaginatedFetch('expenses', page, limit);
+
   const isRefreshingRef = useRef(false);
 
-  // State for adding new expense
+  // Form state
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Ingredients');
   const [date, setDate] = useState(() => getIstDateInputValue());
   const [showAddForm, setShowAddForm] = useState(false);
   const [editId, setEditId] = useState(null);
-
-  // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
-
-  const loadExpenses = async () => {
-    if (isRefreshingRef.current) return;
-    isRefreshingRef.current = true;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/expenses`);
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Failed to load expenses (${res.status})`);
-      }
-      setExpenses(await res.json());
-      setError('');
-    } catch (err) {
-      console.error('Failed to load expenses', err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-      isRefreshingRef.current = false;
-    }
-  };
-
-  useEffect(() => {
-    loadExpenses();
-    const intervalId = setInterval(loadExpenses, 10000);
-    return () => clearInterval(intervalId);
-  }, []);
+  const [formError, setFormError] = useState('');
 
   const resetForm = () => {
     setDescription('');
@@ -102,7 +79,8 @@ export default function Expenses() {
     setDate(getIstDateInputValue());
     setShowAddForm(false);
     setEditId(null);
-    setError('');
+    queryClient.invalidateQueries(['expenses']);
+    setFormError('');
   };
 
   const handleEditClick = (exp) => {
@@ -115,16 +93,13 @@ export default function Expenses() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handle Add / Update
   const handleAddExpense = async (e) => {
     e.preventDefault();
     if (!description.trim() || !amount || parseFloat(amount) <= 0) return;
-
     try {
       const isEdit = !!editId;
       const url = isEdit ? `${API_BASE}/api/expenses/${editId}` : `${API_BASE}/api/expenses`;
       const method = isEdit ? 'PUT' : 'POST';
-
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -135,68 +110,56 @@ export default function Expenses() {
           date,
         }),
       });
-
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Failed to save expense (${res.status})`);
       }
-
-      const savedExpense = await res.json();
-      if (isEdit) {
-        setExpenses(prev => prev.map(exp => exp.id === savedExpense.id ? savedExpense : exp));
-      } else {
-        setExpenses(prev => [savedExpense, ...prev]);
-      }
+      await res.json(); // response not used directly
+      queryClient.invalidateQueries(['expenses']);
       resetForm();
     } catch (err) {
       console.error('Failed to save expense', err);
-      setError(err.message);
+      setFormError(err.message);
     }
   };
 
-  // Handle Delete
   const handleDeleteExpense = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
-      const snapshot = expenses;
-      setExpenses(prev => prev.filter(exp => exp.id !== id));
       try {
-        const res = await fetch(`${API_BASE}/api/expenses/${id}`, {
-          method: 'DELETE',
-        });
+        const res = await fetch(`${API_BASE}/api/expenses/${id}`, { method: 'DELETE' });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error || `Failed to delete expense (${res.status})`);
         }
-        setError('');
+        queryClient.invalidateQueries(['expenses']);
       } catch (err) {
         console.error('Failed to delete expense', err);
-        setExpenses(snapshot);
-        setError(err.message);
+        setFormError(err.message);
       }
     }
   };
 
-  // Calculations
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-
   const categoryTotals = CATEGORIES.reduce((acc, cat) => {
-    const total = expenses
-      .filter(exp => exp.category === cat.name)
-      .reduce((sum, exp) => sum + exp.amount, 0);
+    const total = expenses.filter((exp) => exp.category === cat.name).reduce((s, e) => s + e.amount, 0);
     acc[cat.name] = total;
     return acc;
   }, {});
-
-  const topCategory = Object.keys(categoryTotals).reduce((a, b) => 
-    categoryTotals[a] > categoryTotals[b] ? a : b, 
-    CATEGORIES[0].name
+  const topCategory = Object.keys(categoryTotals).reduce((a, b) =>
+    categoryTotals[a] > categoryTotals[b] ? a : b,
+    CATEGORIES[0].name,
   );
 
-  const filteredExpenses = expenses.filter(exp => {
+  const filteredExpenses = expenses.filter((exp) => {
     const matchesSearch = exp.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategoryFilter === 'All' || exp.category === selectedCategoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  // Pagination controls
+  const totalPages = Math.ceil(totalCount / limit) || 1;
+  const goPrev = () => setPage((p) => Math.max(p - 1, 1));
+  const goNext = () => setPage((p) => Math.min(p + 1, totalPages));
 
   return (
     <div className="expenses-page">
@@ -222,7 +185,6 @@ export default function Expenses() {
             <span className="stat-sub">Across all recorded bills</span>
           </div>
         </div>
-
         <div className="stat-card card">
           <div className="stat-icon" style={{ background: 'rgba(108, 92, 231, 0.1)', color: '#6c5ce7' }}>
             <TrendingDown size={22} />
@@ -233,35 +195,34 @@ export default function Expenses() {
             <span className="stat-sub">₹{categoryTotals[topCategory]?.toLocaleString('en-IN') || 0} spent</span>
           </div>
         </div>
-
         <div className="stat-card card">
           <div className="stat-icon" style={{ background: 'rgba(0, 184, 148, 0.1)', color: '#00b894' }}>
             <Calendar size={22} />
           </div>
           <div className="stat-content">
             <p className="stat-label">Total Bills Filed</p>
-            <h2 className="stat-value">{expenses.length} Records</h2>
+            <h2 className="stat-value">{totalCount} Records</h2>
             <span className="stat-sub">Synced from the database</span>
           </div>
         </div>
       </div>
 
       <div className="expenses-main-layout">
-        
-        {/* Category Breakdown Breakdown */}
+        {/* Category Breakdown */}
         <div className="expenses-breakdown-card card">
           <h3>Expenditures Breakdown</h3>
-          <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1.5rem' }}>Spendings analyzed by categories</p>
-          
+          <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1.5rem' }}>
+            Spendings analyzed by categories
+          </p>
           <div className="breakdown-list">
-            {CATEGORIES.map(cat => {
+            {CATEGORIES.map((cat) => {
               const amount = categoryTotals[cat.name] || 0;
               const percentage = totalSpent > 0 ? (amount / totalSpent) * 100 : 0;
               return (
                 <div key={cat.name} className="breakdown-item">
                   <div className="breakdown-info">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span className="category-dot" style={{ background: cat.color }}></span>
+                      <span className="category-dot" style={{ background: cat.color }} />
                       <strong style={{ fontSize: '0.875rem' }}>{cat.name}</strong>
                     </div>
                     <span className="breakdown-amount">
@@ -269,13 +230,7 @@ export default function Expenses() {
                     </span>
                   </div>
                   <div className="progress-bar-container">
-                    <div 
-                      className="progress-bar-fill" 
-                      style={{ 
-                        width: `${percentage}%`, 
-                        background: cat.color 
-                      }}
-                    ></div>
+                    <div className="progress-bar-fill" style={{ width: `${percentage}%`, background: cat.color }} />
                   </div>
                 </div>
               );
@@ -285,47 +240,29 @@ export default function Expenses() {
 
         {/* Expenses List & Form */}
         <div className="expenses-list-section">
-          
-          {/* Add Expense Form (Toggled) */}
-          {error && (
-            <div className="expense-form-card card" style={{ borderColor: '#e84118', color: '#e84118' }}>
-              {error}
-            </div>
+          {formError && (
+            <div className="expense-form-card card" style={{ borderColor: '#e84118', color: '#e84118' }}>{formError}</div>
           )}
-
           {showAddForm && (
             <div className="expense-form-card card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 style={{ margin: 0 }}>{editId ? 'Edit Expense' : 'Add New Expense'}</h3>
-                <button className="close-btn" onClick={resetForm}>&times;</button>
+                <button className="close-btn" onClick={resetForm}>×</button>
               </div>
               <form onSubmit={handleAddExpense} className="expense-form">
                 <div className="form-group">
                   <label>Description</label>
-                  <input 
-                    type="text" 
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                    placeholder="e.g., Water Bill, Staff lunch, etc." 
-                    required 
-                  />
+                  <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g., Water Bill, Staff lunch, etc." required />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
                     <label>Amount (₹)</label>
-                    <input 
-                      type="number" 
-                      value={amount}
-                      onChange={e => setAmount(e.target.value)}
-                      placeholder="Amount in Rupees" 
-                      min="1"
-                      required 
-                    />
+                    <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount in Rupees" min="1" required />
                   </div>
                   <div className="form-group">
                     <label>Category</label>
-                    <select value={category} onChange={e => setCategory(e.target.value)}>
-                      {CATEGORIES.map(cat => (
+                    <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                      {CATEGORIES.map((cat) => (
                         <option key={cat.name} value={cat.name}>{cat.name}</option>
                       ))}
                     </select>
@@ -333,12 +270,7 @@ export default function Expenses() {
                 </div>
                 <div className="form-group">
                   <label>Date</label>
-                  <input 
-                    type="date" 
-                    value={date}
-                    onChange={e => setDate(e.target.value)}
-                    required 
-                  />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
                   <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{editId ? 'Update Record' : 'Save Record'}</button>
@@ -348,32 +280,23 @@ export default function Expenses() {
             </div>
           )}
 
-          {/* Table Container */}
+          {/* Table */}
           <div className="expense-table-card card">
             <div className="table-header-filters">
               <div className="search-box">
                 <Search size={18} className="search-icon" />
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search description..." 
-                />
+                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search description..." />
               </div>
               <div className="filter-box">
                 <Filter size={16} className="filter-icon" />
-                <select 
-                  value={selectedCategoryFilter} 
-                  onChange={e => setSelectedCategoryFilter(e.target.value)}
-                >
+                <select value={selectedCategoryFilter} onChange={(e) => setSelectedCategoryFilter(e.target.value)}>
                   <option value="All">All Categories</option>
-                  {CATEGORIES.map(cat => (
+                  {CATEGORIES.map((cat) => (
                     <option key={cat.name} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
               </div>
             </div>
-
             <div className="table-wrapper">
               <table className="expenses-table">
                 <thead>
@@ -386,19 +309,28 @@ export default function Expenses() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredExpenses.length === 0 ? (
+                  {isLoading ? (
                     <tr>
                       <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
                           <AlertCircle size={32} />
-                          <strong>{isLoading ? 'Loading expenses...' : 'No recorded expenses found'}</strong>
-                          <span style={{ fontSize: '0.8rem' }}>{isLoading ? 'Fetching records from the database.' : 'Try clearing filters or add a new record!'}</span>
+                          <strong>Loading expenses...</strong>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredExpenses.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                          <AlertCircle size={32} />
+                          <strong>No recorded expenses found</strong>
+                          <span style={{ fontSize: '0.8rem' }}>Try clearing filters or add a new record!</span>
                         </div>
                       </td>
                     </tr>
                   ) : (
-                    filteredExpenses.map(exp => {
-                      const catInfo = CATEGORIES.find(c => c.name === exp.category) || CATEGORIES[CATEGORIES.length - 1];
+                    filteredExpenses.map((exp) => {
+                      const catInfo = CATEGORIES.find((c) => c.name === exp.category) || CATEGORIES[CATEGORIES.length - 1];
                       return (
                         <tr key={exp.id}>
                           <td>
@@ -408,30 +340,16 @@ export default function Expenses() {
                             </div>
                           </td>
                           <td>
-                            <span 
-                              className="category-badge" 
-                              style={{ 
-                                background: catInfo.bg, 
-                                color: catInfo.color 
-                              }}
-                            >
+                            <span className="category-badge" style={{ background: catInfo.bg, color: catInfo.color }}>
                               <Tag size={10} style={{ marginRight: '0.3rem' }} />
                               {exp.category}
                             </span>
                           </td>
-                          <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            {formatIstDate(exp.date)}
-                          </td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#e84118' }}>
-                            - ₹{exp.amount.toLocaleString('en-IN')}
-                          </td>
+                          <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{formatIstDate(exp.date)}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#e84118' }}>- ₹{exp.amount.toLocaleString('en-IN')}</td>
                           <td style={{ textAlign: 'center' }}>
-                            <button className="edit-action-btn" onClick={() => handleEditClick(exp)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#0984e3', cursor: 'pointer' }} title="Edit Expense">
-                              <Edit2 size={15} />
-                            </button>
-                            <button className="delete-action-btn" onClick={() => handleDeleteExpense(exp.id)} title="Delete Expense">
-                              <Trash2 size={15} />
-                            </button>
+                            <button className="edit-action-btn" onClick={() => handleEditClick(exp)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#0984e3', cursor: 'pointer' }} title="Edit Expense"><Edit2 size={15} /></button>
+                            <button className="delete-action-btn" onClick={() => handleDeleteExpense(exp.id)} title="Delete Expense"><Trash2 size={15} /></button>
                           </td>
                         </tr>
                       );
@@ -442,10 +360,14 @@ export default function Expenses() {
             </div>
           </div>
 
+          {/* Pagination Controls */}
+          <div className="pagination-controls" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+            <button className="btn btn-outline" onClick={goPrev} disabled={page === 1}>Prev</button>
+            <span>Page {page} of {totalPages}</span>
+            <button className="btn btn-outline" onClick={goNext} disabled={page === totalPages}>Next</button>
+          </div>
         </div>
-
       </div>
-
     </div>
   );
 }

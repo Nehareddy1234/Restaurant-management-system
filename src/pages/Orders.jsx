@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChefHat, CheckCircle, Clock, Printer, Edit, RefreshCw, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import ReceiptModal from '../components/ReceiptModal.jsx';
 import './Orders.css';
 
 const statusConfig = {
@@ -10,9 +11,11 @@ const statusConfig = {
 };
 
 export default function Orders() {
-  const { activeOrders, markOrderReady, closeOrder, deleteOrder, refreshData } = useApp();
+  const { activeOrders, markOrderReady, closeOrder, deleteOrder, refreshData, menuItems } = useApp();
   const [dialogOrderId, setDialogOrderId] = useState(null);
   const [closingOrderId, setClosingOrderId] = useState(null);
+  const [receiptData, setReceiptData] = useState(null);
+  const [showReceipt, setShowReceipt] = useState(false);
   const navigate = useNavigate();
 
   const handleCloseOrder = async (orderId, paymentMethod) => {
@@ -39,8 +42,55 @@ export default function Orders() {
     }
   };
 
+  const handlePrintReceipt = (order) => {
+    const reconstructedCart = [];
+    if (order.items && order.items.length > 0) {
+      order.items.forEach(oi => {
+        const menuItem = menuItems.find(item => item.id === oi.menuItemId);
+        if (menuItem) {
+          reconstructedCart.push({
+            ...menuItem,
+            quantity: oi.quantity,
+            addOns: oi.addOns || {}
+          });
+        }
+      });
+    } else {
+      (order.itemList || []).forEach(itemStr => {
+        const match = itemStr.match(/(.+) x(\d+)$/);
+        if (match) {
+          const fullName = match[1];
+          const qty = parseInt(match[2], 10);
+          const cleanName = fullName.replace(/\s*\([^)]+\)/g, '').trim();
+          const menuItem = menuItems.find(item => item.name === cleanName);
+          if (menuItem) {
+            reconstructedCart.push({ ...menuItem, quantity: qty });
+          } else {
+            reconstructedCart.push({ name: cleanName, quantity: qty, price: 0 });
+          }
+        }
+      });
+    }
+
+    setReceiptData({
+      items: reconstructedCart,
+      total: order.total,
+      table: order.table,
+      customerName: order.customerName,
+      date: order.time,
+      orderId: order.id
+    });
+    setShowReceipt(true);
+  };
+
   return (
     <div className="orders-page">
+      {showReceipt && receiptData && (
+        <ReceiptModal
+          order={receiptData}
+          onClose={() => setShowReceipt(false)}
+        />
+      )}
       <header className="orders-header">
         <div>
           <h1>Active Orders</h1>
@@ -103,6 +153,9 @@ export default function Orders() {
                         <button className="btn btn-primary" onClick={() => setDialogOrderId(order.id)}>
                           <Printer size={15} /> Bill & Close
                         </button>
+                    <button className="btn btn-outline" onClick={() => handlePrintReceipt(order)}>
+                      <Printer size={15} /> Print Receipt
+                    </button>
                         {dialogOrderId === order.id && (
                           <div className="payment-dialog">
                             <button className="btn btn-primary" disabled={closingOrderId === order.id} onClick={() => handleCloseOrder(order.id, 'Cash')}>

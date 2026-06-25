@@ -1,0 +1,173 @@
+.receipt-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.receipt-modal {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.receipt-header h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.receipt-table th, .receipt-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.receipt-table th {
+  background: #f5f5f5;
+}
+
+.receipt-footer {
+  margin-top: 1rem;
+  text-align: right;
+}
+
+.btn {
+  cursor: pointer;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background: #00b894;
+  color: #fff;
+}
+
+/* Thermal Printer Styles (typically 80mm wide) */
+@media print {
+  /* Hide everything else on the page */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Reset page margins to prevent extra blank space */
+  @page {
+    margin: 0;
+    size: 80mm auto;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .receipt-modal-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    background: transparent;
+  }
+
+  .receipt-modal, .receipt-modal * {
+    visibility: visible;
+  }
+
+  .receipt-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 76mm; /* slightly less than 80mm to allow for natural margins */
+    max-width: 80mm;
+    margin: 0;
+    padding: 2mm;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    color: #000;
+  }
+
+  /* Optimize font and text for thermal printing */
+  .receipt-modal {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .receipt-header h2 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 2mm;
+  }
+  
+  .receipt-header p {
+    text-align: center;
+    margin: 2px 0;
+  }
+
+  /* Simplify table for narrow width */
+  .receipt-table {
+    margin-top: 2mm;
+    border-collapse: collapse;
+  }
+
+  .receipt-table th, .receipt-table td {
+    border: none;
+    border-bottom: 1px dashed #000;
+    padding: 2px 0;
+    font-size: 12px;
+  }
+  
+  .receipt-table th {
+    background: transparent;
+    border-bottom: 1px solid #000;
+    border-top: 1px solid #000;
+  }
+
+  /* Right align price and total columns */
+  .receipt-table th:nth-child(3), 
+  .receipt-table td:nth-child(3),
+  .receipt-table th:nth-child(4), 
+  .receipt-table td:nth-child(4) {
+    text-align: right;
+  }
+
+  .receipt-footer {
+    text-align: right;
+    margin-top: 4mm;
+  }
+  
+  .receipt-footer h3 {
+    font-size: 14px;
+    margin: 0;
+  }
+
+  /* Hide the buttons on the physical printout */
+  .receipt-actions {
+    display: none !important;
+  }
+  
+  hr {
+    border-top: 1px dashed #000;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+  }
+}

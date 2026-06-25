@@ -289,7 +289,9 @@ export default function History() {
                     <th>Order No.</th>
                     <th>Ordered</th>
                     <th>Paid</th>
+                    <th>Delivery Date</th>
                     <th>Name</th>
+<th>Custom Text</th>
                     <th>Table</th>
                     <th>Items Count</th>
                     <th>Total Bill</th>
@@ -317,7 +319,9 @@ export default function History() {
                           </div>
                         )}
                       </td>
+                      <td>{order.deliveryDate || '-'}</td>
                       <td>{order.customerName || <span className="text-muted">-</span>}</td>
+                      <td>{order.customText || <span className="text-muted">-</span>}</td>
                       <td><span className="table-badge">{order.table}</span></td>
                       <td>{order.itemList?.length || 0} items</td>
                       <td><strong className="price-label">₹{order.total}</strong></td>
@@ -378,6 +382,10 @@ export default function History() {
                 <div className="detail-row">
                   <span>Paid At</span>
                   <span>{selectedOrder.paymentStatus === 'Pending' ? 'Pending' : `${selectedOrder.paidDate || selectedOrder.date || 'Today'} at ${selectedOrder.paidTime || selectedOrder.closedAt}`}</span>
+                </div>
+                <div className="detail-row">
+                  <span>Delivery Date</span>
+                  <span>{selectedOrder.deliveryDate || '-'}</span>
                 </div>
 
                 <div className="item-breakdown" style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>

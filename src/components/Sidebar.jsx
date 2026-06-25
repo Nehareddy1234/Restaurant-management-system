@@ -34,6 +34,7 @@ const ALL_RESTAURANT_NAV = [
   { path: '/history', icon: <History size={20} />, label: 'History' },
   { path: '/pay-later', icon: <CreditCard size={20} />, label: 'Pay Later' },
   { path: '/expenses', icon: <DollarSign size={20} />, label: 'Expenses' },
+  { path: '/catering', icon: <DollarSign size={20} />, label: 'Catering' },
   { path: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
 ];
 

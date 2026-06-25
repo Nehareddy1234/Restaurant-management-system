@@ -27,8 +27,21 @@ fastify.addHook('preHandler', async (request, reply) => {
 // ---- Public routes -----------------------------------------------
 fastify.get('/health', async () => ({ status: 'ok' }));
 
-fastify.get('/menu', async () => {
-  return prisma.menuItem.findMany();
+fastify.get('/menu', async (request, reply) => {
+  const page = parseInt((request.query as any).page) || 1;
+  const limit = parseInt((request.query as any).limit) || 20;
+  const offset = (page - 1) * limit;
+  const data = await prisma.menuItem.findMany({
+    skip: offset,
+    take: limit,
+    select: { id: true, name: true, price: true, description: true }
+  });
+  const total = await prisma.menuItem.count();
+  reply.headers({
+    'Cache-Control': 's-maxage=60, stale-while-revalidate=30',
+    'X-Total-Count': total,
+  });
+  return data;
 });
 
 // ---- Protected routes (require auth) -------------------------------
@@ -90,8 +103,22 @@ fastify.post('/orders', async (request, reply) => {
   reply.send({ message: 'order placed', orderId: order.id, total: order.total });
 });
 
-fastify.get('/tables', async () => {
-  return prisma.table.findMany({ include: { order: true } });
+fastify.get('/tables', async (request, reply) => {
+  const page = parseInt((request.query as any).page) || 1;
+  const limit = parseInt((request.query as any).limit) || 20;
+  const offset = (page - 1) * limit;
+  const data = await prisma.table.findMany({
+    skip: offset,
+    take: limit,
+    include: { order: true },
+    select: { id: true, status: true, order: true }
+  });
+  const total = await prisma.table.count();
+  reply.headers({
+    'Cache-Control': 's-maxage=60, stale-while-revalidate=30',
+    'X-Total-Count': total,
+  });
+  return data;
 });
 
 fastify.put('/tables/:id/status', async (request, reply) => {
@@ -106,8 +133,21 @@ fastify.put('/tables/:id/status', async (request, reply) => {
 
 // ---- Grocery Store Routes ------------------------------------------
 
-fastify.get('/store-products', async () => {
-  return prisma.storeProduct.findMany();
+fastify.get('/store-products', async (request, reply) => {
+  const page = parseInt((request.query as any).page) || 1;
+  const limit = parseInt((request.query as any).limit) || 20;
+  const offset = (page - 1) * limit;
+  const data = await prisma.storeProduct.findMany({
+    skip: offset,
+    take: limit,
+    select: { id: true, name: true, price: true, stock: true }
+  });
+  const total = await prisma.storeProduct.count();
+  reply.headers({
+    'Cache-Control': 's-maxage=60, stale-while-revalidate=30',
+    'X-Total-Count': total,
+  });
+  return data;
 });
 
 fastify.post('/store-products', async (request, reply) => {
@@ -132,8 +172,22 @@ fastify.delete('/store-products/:id', async (request, reply) => {
   reply.send({ success: true });
 });
 
-fastify.get('/store-orders', async () => {
-  return prisma.storeOrder.findMany({ include: { items: true } });
+fastify.get('/store-orders', async (request, reply) => {
+  const page = parseInt((request.query as any).page) || 1;
+  const limit = parseInt((request.query as any).limit) || 20;
+  const offset = (page - 1) * limit;
+  const data = await prisma.storeOrder.findMany({
+    skip: offset,
+    take: limit,
+    include: { items: true },
+    select: { id: true, orderNumber: true, totalAmount: true, paymentMethod: true, items: true }
+  });
+  const total = await prisma.storeOrder.count();
+  reply.headers({
+    'Cache-Control': 's-maxage=60, stale-while-revalidate=30',
+    'X-Total-Count': total,
+  });
+  return data;
 });
 
 fastify.post('/store-orders', async (request, reply) => {
@@ -173,8 +227,22 @@ fastify.post('/store-orders', async (request, reply) => {
   reply.send(order);
 });
 
-fastify.get('/supplier-orders', async () => {
-  return prisma.supplierOrder.findMany({ include: { items: true } });
+fastify.get('/supplier-orders', async (request, reply) => {
+  const page = parseInt((request.query as any).page) || 1;
+  const limit = parseInt((request.query as any).limit) || 20;
+  const offset = (page - 1) * limit;
+  const data = await prisma.supplierOrder.findMany({
+    skip: offset,
+    take: limit,
+    include: { items: true },
+    select: { id: true, supplierName: true, totalAmount: true, status: true, items: true }
+  });
+  const total = await prisma.supplierOrder.count();
+  reply.headers({
+    'Cache-Control': 's-maxage=60, stale-while-revalidate=30',
+    'X-Total-Count': total,
+  });
+  return data;
 });
 
 fastify.post('/supplier-orders', async (request, reply) => {

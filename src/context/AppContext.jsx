@@ -88,43 +88,61 @@ export function AppProvider({ children }) {
   const [storeOrders, setStoreOrders] = useState([]);
   const [supplierOrders, setSupplierOrders] = useState([]);
   const [dataErrors, setDataErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  // Configurable refresh interval (ms) – default 30 seconds
+  const REFRESH_INTERVAL_MS = 120000;
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const isRefreshingRef = useRef(false);
   const pendingClosedOrderIdsRef = useRef(new Set());
 
   const loadBackendData = async () => {
-    const responses = {};
-    const errors = {};
-    const endpoints = [
-      ['menu', `${API_BASE}/api/menu`],
-      ['tables', `${API_BASE}/api/tables`],
-      ['orders', `${API_BASE}/api/orders`],
-      ['grocery', `${API_BASE}/api/grocery`],
-      ['categories', `${API_BASE}/api/menu-categories`],
-      ['storeInventory', `${API_BASE}/api/store-products`],
-      ['storeOrders', `${API_BASE}/api/store-orders`],
-      ['supplierOrders', `${API_BASE}/api/supplier-orders`],
-    ];
-
-    for (const [key, endpoint] of endpoints) {
+    setLoading(true);
+      const endpoints = [
+        ['menu', `${API_BASE}/api/menu`],
+        ['tables', `${API_BASE}/api/tables`],
+        // Orders are fetched lazily via loadOrders()
+        ['grocery', `${API_BASE}/api/grocery`],
+        ['categories', `${API_BASE}/api/menu-categories`],
+        ['storeInventory', `${API_BASE}/api/store-products`],
+        ['storeOrders', `${API_BASE}/api/store-orders`],
+        ['supplierOrders', `${API_BASE}/api/supplier-orders`],
+      ];
+    
+    // Simple in‑memory + localStorage caching (60 s TTL)
+    const fetchPromises = endpoints.map(async ([key, endpoint]) => {
       try {
+        const cacheKey = `cache_${key}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const { data, ts } = JSON.parse(cached);
+          if (Date.now() - ts < 60000) {
+            return { key, data, error: null };
+          }
+        }
         const res = await fetch(endpoint);
         if (res && res.ok) {
-          responses[key] = await res.json();
-        } else {
-          const err = await res?.json?.().catch(() => ({}));
-          errors[key] = err?.details || err?.error || `Failed to load ${key}`;
-          responses[key] = null;
+          const data = await res.json();
+          localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
+          return { key, data, error: null };
         }
+        const err = await res?.json?.().catch(() => ({}));
+        return { key, data: null, error: err?.details || err?.error || `Failed to load ${key}` };
       } catch (err) {
-        errors[key] = err.message || `Failed to load ${key}`;
-        responses[key] = null;
+        return { key, data: null, error: err.message || `Failed to load ${key}` };
       }
-    }
+    });
+    const results = await Promise.all(fetchPromises);
+    const responses = {};
+    const errors = {};
+    results.forEach(({ key, data, error }) => {
+      responses[key] = data;
+      if (error) errors[key] = error;
+    });
     setDataErrors(errors);
-
     if (responses.menu) setMenuItems(responses.menu);
     if (responses.tables) setTables(responses.tables);
-    if (responses.orders) {
+    // Orders data is large; skip auto‑load unless explicitly requested
+    if (autoRefreshEnabled && responses.orders) {
       const allOrders = responses.orders;
       const backendActiveOrders = allOrders.filter(o =>
         !isClosedOrder(o) && !pendingClosedOrderIdsRef.current.has(o.id)
@@ -140,6 +158,7 @@ export function AppProvider({ children }) {
     if (responses.storeInventory) setStoreInventory(responses.storeInventory);
     if (responses.storeOrders) setStoreOrders(responses.storeOrders);
     if (responses.supplierOrders) setSupplierOrders(responses.supplierOrders);
+    setLoading(false);
   };
 
   // Fetch initial data from backend (fallback to defaults if backend not ready)
@@ -147,12 +166,53 @@ export function AppProvider({ children }) {
     const fetchBackendData = async () => {
       try {
         await loadBackendData();
+        // Pre‑load orders if auto‑refresh is enabled and user wants them
+        if (autoRefreshEnabled) {
+          await loadOrders();
+        }
       } catch (err) {
         console.error("Backend not reachable. Falling back to local state.", err);
       }
     };
     fetchBackendData();
   }, []);
+
+  // Lazy‑load orders separately to avoid heavy initial payload
+  const loadOrders = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/orders`);
+      if (res && res.ok) {
+        const data = await res.json();
+        const backendActiveOrders = data.filter(o =>
+          !isClosedOrder(o) && !pendingClosedOrderIdsRef.current.has(o.id)
+        );
+        setActiveOrders(prev =>
+          mergeLocalActiveOrders(prev, backendActiveOrders)
+            .filter(order => !pendingClosedOrderIdsRef.current.has(order.id))
+        );
+        setOrderHistory(data.filter(isClosedOrder));
+      }
+    } catch (e) {
+      console.error('Failed to load orders', e);
+    }
+  };
+  // Auto‑refresh interval – respects autoRefreshEnabled flag
+  useEffect(() => {
+    if (!autoRefreshEnabled) return undefined;
+    const intervalId = setInterval(() => {
+      refreshData();
+    }, REFRESH_INTERVAL_MS);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [autoRefreshEnabled]);
 
   // Responsive Layout States
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -185,24 +245,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      refreshData();
-    }, 15000);
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        refreshData();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
+  // Removed secondary refresh interval (15 s). The primary auto‑refresh above now runs every REFRESH_INTERVAL_MS (2 min).
 
   const buildLocalOrder = (cartItems, tableId, paymentMethod = 'Cash', customerName = '', id = `local-${Date.now()}`) => {
     const now = new Date();
@@ -483,27 +526,27 @@ export function AppProvider({ children }) {
     return updatedOrder;
   };
 
-  const logOldSettlement = async (customerName, amount, paymentMethod) => {
-    const res = await fetch(`${API_BASE}/api/orders/old-settlement`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName,
-        amount,
-        paymentMethod,
-      }),
-    });
+  const logOldSettlement = async (customerName, amount, paymentMethod, extraData = {}) => {
+  const res = await fetch(`${API_BASE}/api/orders/old-settlement`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customerName,
+      amount,
+      paymentMethod,
+      ...extraData,
+    }),
+  });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.details || err.error || `Failed to log settlement (${res.status})`);
-    }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.details || err.error || `Failed to log settlement (${res.status})`);
+  }
 
-    const createdOrder = await res.json();
-    setOrderHistory(prev => [createdOrder, ...prev]);
-    return createdOrder;
-  };
-
+  const createdOrder = await res.json();
+  setOrderHistory(prev => [createdOrder, ...prev]);
+  return createdOrder;
+};
   const freeTable = (tableId) => {
     const table = tables.find(t => t.id === tableId);
     if (table?.order) closeOrder(table.order.id);

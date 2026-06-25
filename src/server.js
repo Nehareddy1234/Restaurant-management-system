@@ -20,9 +20,22 @@ fastify.addHook('preHandler', async (request, reply) => {
 });
 // ---- Public routes -----------------------------------------------
 fastify.get('/health', async () => ({ status: 'ok' }));
-fastify.get('/menu', async () => {
-    return prisma.menuItem.findMany();
-});
+fastify.get('/menu', async (request, reply) => {
+      const page = parseInt(request.query.page) || 1;
+      const limit = parseInt(request.query.limit) || 20;
+      const offset = (page - 1) * limit;
+      const data = await prisma.menuItem.findMany({
+        skip: offset,
+        take: limit,
+      });
+      // Add simple pagination metadata
+      const total = await prisma.menuItem.count();
+      reply.headers({
+        'Cache-Control': 's-maxage=60, stale-while-revalidate=30',
+        'X-Total-Count': total,
+      });
+      return data;
+    });
 // ---- Protected routes (require auth) -------------------------------
 fastify.post('/orders', async (request, reply) => {
     const user = request.user;

@@ -156,6 +156,13 @@ export default function POS() {
       return;
     }
 
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      navigate('/orders');
+    }, 1500);
+
+    // Reset form state
     setCart([]);
     setSelectedTable('');
     setCustomerName('');
@@ -163,8 +170,6 @@ export default function POS() {
     setLoadedOrderId(null);
     setSearchParams({});
     setActiveTab('menu');
-    setShowSuccess(true);
-    setTimeout(() => { setShowSuccess(false); navigate('/orders'); }, 1500);
     setIsSubmitting(false);
   };
 

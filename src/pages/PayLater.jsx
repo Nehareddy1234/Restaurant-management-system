@@ -136,6 +136,7 @@ export default function PayLater() {
                 <tr>
                   <th>Customer</th>
                   <th>Order ID</th>
+                  <th>Items Ordered</th>
                   <th>Ordered</th>
                   <th>Amount Due</th>
                   <th>How They Pay</th>
@@ -152,6 +153,15 @@ export default function PayLater() {
                     <td>
                       <strong>#{order.orderNumber}</strong>
                       <span className="pay-later-subtext">{order.id.slice(0, 8)}</span>
+                    </td>
+                    <td style={{ maxWidth: '250px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                        {order.itemList && order.itemList.length > 0 ? (
+                          order.itemList.map((item, i) => <span key={i}>• {item}</span>)
+                        ) : (
+                          <span className="text-muted" style={{ fontStyle: 'italic' }}>Custom debt record</span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <span>{order.date || '-'}</span>

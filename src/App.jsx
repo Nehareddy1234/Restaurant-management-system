@@ -1,4 +1,6 @@
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+const queryClient = new QueryClient();
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import { AppProvider, useApp } from './context/AppContext';
@@ -12,6 +14,7 @@ import Grocery from './pages/Grocery';
 import History from './pages/History';
 import PayLater from './pages/PayLater';
 import Analytics from './pages/Analytics';
+import Catering from './pages/Catering';
 import Expenses from './pages/Expenses';
 import GroceryInventory from './pages/GroceryInventory';
 import GroceryPOS from './pages/GroceryPOS';
@@ -102,7 +105,7 @@ function AppContent() {
           <Route path="/expenses"  element={<ProtectedRoute path="/expenses"><Expenses /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute path="/analytics"><Analytics /></ProtectedRoute>} />
           
-          {/* Grocery Store Routes */}
+            <Route path="/catering"  element={<ProtectedRoute path="/catering"><Catering /></ProtectedRoute>} />
           <Route path="/store/pos"       element={<ProtectedRoute path="/store/pos"><GroceryPOS /></ProtectedRoute>} />
           <Route path="/store/inventory" element={<ProtectedRoute path="/store/inventory"><GroceryInventory /></ProtectedRoute>} />
           <Route path="/store/suppliers" element={<ProtectedRoute path="/store/suppliers"><GrocerySupplier /></ProtectedRoute>} />
