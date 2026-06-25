@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 
 /**
@@ -8,6 +8,10 @@ import React, { useEffect } from 'react';
  *   - onClose: () => void
  */
 export default function ReceiptModal({ order, onClose }) {
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [amountTendered, setAmountTendered] = useState(order.total);
+  const balance = amountTendered - order.total;
+
   // Open print dialog when the modal appears
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -23,7 +27,6 @@ export default function ReceiptModal({ order, onClose }) {
     text += `--------------------------------\n`;
     text += `Date: ${order.date || new Date().toLocaleString()}\n`;
     if (order.table) text += `Table: ${order.table}\n`;
-    if (order.customerName) text += `Customer: ${order.customerName}\n`;
     text += `--------------------------------\n`;
     text += `Item            Qty       Total\n`;
     text += `--------------------------------\n`;
@@ -37,7 +40,12 @@ export default function ReceiptModal({ order, onClose }) {
     });
     
     text += `--------------------------------\n`;
-    text += `TOTAL: Rs${order.total}\n`;
+    text += `TOTAL:`.padEnd(20, ' ') + `Rs${order.total}`.padStart(12, ' ') + `\n`;
+    text += `Paid via:`.padEnd(20, ' ') + `${paymentMethod}`.padStart(12, ' ') + `\n`;
+    if (paymentMethod === 'Cash') {
+      text += `Received:`.padEnd(20, ' ') + `Rs${amountTendered}`.padStart(12, ' ') + `\n`;
+      text += `Balance:`.padEnd(20, ' ') + `Rs${balance}`.padStart(12, ' ') + `\n`;
+    }
     text += `--------------------------------\n`;
     text += `     Thank you for visiting!    \n\n\n`;
 
@@ -51,7 +59,6 @@ export default function ReceiptModal({ order, onClose }) {
           <h2>Neha's Kitchen</h2>
           <p>{order.date || new Date().toLocaleString()}</p>
           {order.table && <p>Table: {order.table}</p>}
-          {order.customerName && <p>Customer: {order.customerName}</p>}
         </div>
         <hr />
         <div className="receipt-body">
@@ -78,8 +85,32 @@ export default function ReceiptModal({ order, onClose }) {
         </div>
         <hr />
         <div className="receipt-footer">
-          <h3>Total: {formatCurrency(order.total)}</h3>
-          <div className="receipt-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+            <h3>Total: {formatCurrency(order.total)}</h3>
+            <p style={{ margin: '4px 0' }}>Paid via: {paymentMethod}</p>
+            {paymentMethod === 'Cash' && (
+              <>
+                <p style={{ margin: '4px 0' }}>Received: {formatCurrency(amountTendered)}</p>
+                <p style={{ margin: '4px 0' }}>Balance: {formatCurrency(balance)}</p>
+              </>
+            )}
+          </div>
+          <div className="receipt-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <div style={{ marginRight: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px' }}>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+              </select>
+              {paymentMethod === 'Cash' && (
+                <input 
+                  type="number" 
+                  value={amountTendered} 
+                  onChange={e => setAmountTendered(Number(e.target.value))}
+                  style={{ padding: '0.4rem', width: '80px', borderRadius: '4px', border: '1px solid #ccc' }}
+                  min={order.total}
+                />
+              )}
+            </div>
             <button className="btn btn-secondary" onClick={() => window.print()}>Standard Print</button>
             <button className="btn btn-secondary" style={{ background: '#3498db', color: '#fff' }} onClick={handleRawBTPrint}>RawBT Print</button>
             <button className="btn btn-primary" onClick={onClose}>Close</button>
