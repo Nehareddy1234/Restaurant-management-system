@@ -251,7 +251,16 @@
   flex-shrink: 0;
 }
 
-.customer-dish-card:hover .customer-dish-image-placeholder {
+.customer-dish-image {
+  height: 105px;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.customer-dish-card:hover .customer-dish-image-placeholder,
+.customer-dish-card:hover .customer-dish-image {
   transform: scale(1.05);
 }
 
@@ -714,7 +723,8 @@
     min-height: 158px;
   }
 
-  .customer-dish-image-placeholder {
+  .customer-dish-image-placeholder,
+  .customer-dish-image {
     height: 76px;
     font-size: 1.7rem;
   }

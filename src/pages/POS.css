@@ -178,6 +178,21 @@
   box-shadow: var(--shadow-md);
 }
 
+.menu-card.rearrange-mode {
+  cursor: grab;
+  border: 2px dashed transparent;
+}
+
+.menu-card.rearrange-mode:active {
+  cursor: grabbing;
+}
+
+.menu-card.dragging {
+  opacity: 0.5;
+  border-color: var(--primary);
+  transform: scale(1.02);
+}
+
 .menu-card-image {
   height: 110px;
   background-size: cover;

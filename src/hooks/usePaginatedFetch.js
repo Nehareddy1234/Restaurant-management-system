@@ -28,8 +28,10 @@ export function usePaginatedFetch(resource, page = 1, limit = 20) {
     return { data, totalCount };
   };
 
-  const query = useQuery([resource, page, limit], fetchPage, {
-    keepPreviousData: true,
+  const query = useQuery({
+    queryKey: [resource, page, limit],
+    queryFn: fetchPage,
+    placeholderData: (prev) => prev, // v5 equivalent of keepPreviousData
     staleTime: 1000 * 60, // 1 minute – reduces redundant egress
   });
 

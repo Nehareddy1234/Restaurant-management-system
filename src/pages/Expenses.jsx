@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   DollarSign,
   Plus,
@@ -13,8 +13,7 @@ import {
   Edit2,
 } from 'lucide-react';
 import './Expenses.css';
-import { usePaginatedFetch } from '../hooks/usePaginatedFetch';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 
 const isCapacitor = typeof window !== 'undefined' && window.Capacitor !== undefined;
@@ -57,9 +56,23 @@ export default function Expenses() {
 
   const [page, setPage] = useState(1);
   const limit = 20;
-  const { data: expenses = [], totalCount, isLoading, error } = usePaginatedFetch('expenses', page, limit);
 
-  const isRefreshingRef = useRef(false);
+  const { data: expenses = [], isLoading, error } = useQuery({
+    queryKey: ['expenses'],
+    queryFn: async () => {
+      const url = `${API_BASE}/api/expenses`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Failed to fetch expenses (${res.status})`);
+      }
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    },
+    staleTime: 1000 * 60,
+  });
+
+  const totalCount = expenses.length;
 
   // Form state
   const [description, setDescription] = useState('');
@@ -79,7 +92,7 @@ export default function Expenses() {
     setDate(getIstDateInputValue());
     setShowAddForm(false);
     setEditId(null);
-    queryClient.invalidateQueries(['expenses']);
+    queryClient.invalidateQueries({ queryKey: ['expenses'] });
     setFormError('');
   };
 
@@ -115,7 +128,7 @@ export default function Expenses() {
         throw new Error(err.error || `Failed to save expense (${res.status})`);
       }
       await res.json(); // response not used directly
-      queryClient.invalidateQueries(['expenses']);
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
       resetForm();
     } catch (err) {
       console.error('Failed to save expense', err);
@@ -131,7 +144,7 @@ export default function Expenses() {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error || `Failed to delete expense (${res.status})`);
         }
-        queryClient.invalidateQueries(['expenses']);
+        queryClient.invalidateQueries({ queryKey: ['expenses'] });
       } catch (err) {
         console.error('Failed to delete expense', err);
         setFormError(err.message);
@@ -139,25 +152,29 @@ export default function Expenses() {
     }
   };
 
-  const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalSpent = expenses.reduce((sum, exp) => sum + (exp?.amount || 0), 0);
   const categoryTotals = CATEGORIES.reduce((acc, cat) => {
-    const total = expenses.filter((exp) => exp.category === cat.name).reduce((s, e) => s + e.amount, 0);
+    const total = expenses.filter((exp) => exp?.category === cat.name).reduce((s, e) => s + (e?.amount || 0), 0);
     acc[cat.name] = total;
     return acc;
   }, {});
-  const topCategory = Object.keys(categoryTotals).reduce((a, b) =>
-    categoryTotals[a] > categoryTotals[b] ? a : b,
-    CATEGORIES[0].name,
-  );
+  const topCategory = expenses.length > 0
+    ? Object.keys(categoryTotals).reduce((a, b) =>
+        categoryTotals[a] > categoryTotals[b] ? a : b,
+        CATEGORIES[0].name,
+      )
+    : CATEGORIES[0].name;
 
   const filteredExpenses = expenses.filter((exp) => {
-    const matchesSearch = exp.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategoryFilter === 'All' || exp.category === selectedCategoryFilter;
+    const desc = exp?.description || '';
+    const matchesSearch = desc.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategoryFilter === 'All' || exp?.category === selectedCategoryFilter;
     return matchesSearch && matchesCategory;
   });
 
-  // Pagination controls
-  const totalPages = Math.ceil(totalCount / limit) || 1;
+  // Pagination controls (client-side since API returns full list)
+  const totalPages = Math.ceil(filteredExpenses.length / limit) || 1;
+  const pagedExpenses = filteredExpenses.slice((page - 1) * limit, page * limit);
   const goPrev = () => setPage((p) => Math.max(p - 1, 1));
   const goNext = () => setPage((p) => Math.min(p + 1, totalPages));
 
@@ -318,7 +335,7 @@ export default function Expenses() {
                         </div>
                       </td>
                     </tr>
-                  ) : filteredExpenses.length === 0 ? (
+                  ) : pagedExpenses.length === 0 ? (
                     <tr>
                       <td colSpan={5} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
@@ -329,24 +346,24 @@ export default function Expenses() {
                       </td>
                     </tr>
                   ) : (
-                    filteredExpenses.map((exp) => {
+                    pagedExpenses.map((exp) => {
                       const catInfo = CATEGORIES.find((c) => c.name === exp.category) || CATEGORIES[CATEGORIES.length - 1];
                       return (
                         <tr key={exp.id}>
                           <td>
                             <div className="expense-desc-cell">
                               <FileText size={16} className="desc-icon" />
-                              <span>{exp.description}</span>
+                              <span>{exp?.description || 'No Description'}</span>
                             </div>
                           </td>
                           <td>
                             <span className="category-badge" style={{ background: catInfo.bg, color: catInfo.color }}>
                               <Tag size={10} style={{ marginRight: '0.3rem' }} />
-                              {exp.category}
+                              {exp?.category || 'Unknown'}
                             </span>
                           </td>
-                          <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{formatIstDate(exp.date)}</td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#e84118' }}>- ₹{exp.amount.toLocaleString('en-IN')}</td>
+                          <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{exp?.date ? formatIstDate(exp.date) : 'N/A'}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#e84118' }}>- ₹{(exp?.amount || 0).toLocaleString('en-IN')}</td>
                           <td style={{ textAlign: 'center' }}>
                             <button className="edit-action-btn" onClick={() => handleEditClick(exp)} style={{ marginRight: '0.5rem', background: 'none', border: 'none', color: '#0984e3', cursor: 'pointer' }} title="Edit Expense"><Edit2 size={15} /></button>
                             <button className="delete-action-btn" onClick={() => handleDeleteExpense(exp.id)} title="Delete Expense"><Trash2 size={15} /></button>

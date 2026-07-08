@@ -657,6 +657,33 @@ export function AppProvider({ children }) {
     }
   };
 
+  const reorderMenuItems = async (reorderedItems) => {
+    // Optimistically update the UI
+    setMenuItems(reorderedItems);
+    
+    // Prepare payload
+    const payload = reorderedItems.map((item, index) => ({
+      id: item.id,
+      orderIndex: index
+    }));
+
+    try {
+      const res = await fetch(`${API_BASE}/api/menu/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.details || errBody.error || `HTTP ${res.status}`);
+      }
+    } catch (e) {
+      console.error('reorderMenuItems failed:', e.message);
+      // Let the auto-refresh pull the real state if it failed, or we could rollback manually
+      throw e;
+    }
+  };
+
   const addFoodCategory = async (name) => {
     try {
       const res = await fetch(`${API_BASE}/api/menu-categories`, {
@@ -871,7 +898,7 @@ export function AppProvider({ children }) {
       tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, supplierOrders, dataErrors, foodCategories,
       refreshData,
       placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, logOldSettlement, updateOrderItemQuantity, markOrderReady, closeOrder, deleteOrder, freeTable, updateTableStatus,
-      addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, addFoodCategory, removeFoodCategory,
+      addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, reorderMenuItems, addFoodCategory, removeFoodCategory,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
       addStoreItem, updateStoreItemStock, checkoutStoreOrder, placeSupplierOrder, updateSupplierOrder,
       sidebarOpen, sidebarMinimized, toggleSidebarMinimized, toggleSidebarOpen, closeSidebar,

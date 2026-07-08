@@ -429,7 +429,8 @@ export default async function handler(req, res) {
         .replace('/api/menu', '')
         .replace(/^\//, '');
 
-      const id = idPart ? parseInt(idPart) : null;
+      const isReorder = idPart === 'reorder';
+      const id = (idPart && !isReorder) ? parseInt(idPart) : null;
 
       /**
        * GET MENU
@@ -450,12 +451,34 @@ export default async function handler(req, res) {
         }
 
         const items = await prisma.menuItem.findMany({
-          orderBy: {
-            id: 'asc',
-          },
+          orderBy: [
+            { orderIndex: 'asc' },
+            { id: 'asc' },
+          ],
         });
 
         return send(res, 200, items);
+      }
+      
+      /**
+       * REORDER MENU ITEMS
+       */
+      if (method === 'PUT' && isReorder) {
+        const body = await getJsonBody(req);
+        if (!Array.isArray(body)) {
+          return send(res, 400, { error: 'Expected an array of {id, orderIndex}' });
+        }
+
+        await prisma.$transaction(
+          body.map(item =>
+            prisma.menuItem.update({
+              where: { id: item.id },
+              data: { orderIndex: item.orderIndex },
+            })
+          )
+        );
+
+        return send(res, 200, { success: true });
       }
 
       /**

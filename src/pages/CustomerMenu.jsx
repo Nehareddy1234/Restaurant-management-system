@@ -185,9 +185,16 @@ export default function CustomerMenu() {
             <div className="customer-grid">
               {filteredItems.map(item => (
                 <div key={item.id} className="customer-dish-card">
-                  <div className="customer-dish-image-placeholder">
-                    🍛
-                  </div>
+                  {item.image ? (
+                    <div 
+                      className="customer-dish-image" 
+                      style={{ backgroundImage: `url("${item.image}"), url("https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200")` }}
+                    />
+                  ) : (
+                    <div className="customer-dish-image-placeholder">
+                      🍛
+                    </div>
+                  )}
                   <div className="customer-dish-info">
                     <h3 className="customer-dish-name">{item.name}</h3>
                     <span className="customer-dish-category">{item.category}</span>

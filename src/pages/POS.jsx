@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Minus, Trash2, ShoppingCart, Package } from 'lucide-react';
+import { Search, Plus, Minus, Trash2, ShoppingCart, Package, Move } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import './POS.css';
 
 export default function POS() {
-  const { tables, menuItems, placeOrder, activeOrders, updateOrder, foodCategories } = useApp();
+  const { tables, menuItems, placeOrder, activeOrders, updateOrder, foodCategories, reorderMenuItems } = useApp();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,6 +32,16 @@ export default function POS() {
   const [activeTab, setActiveTab] = useState('menu');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [parcelCharge, setParcelCharge] = useState('');
+
+  const [isRearrangeMode, setIsRearrangeMode] = useState(false);
+  const [draggedItemId, setDraggedItemId] = useState(null);
+  const [localItems, setLocalItems] = useState([]);
+
+  useEffect(() => {
+    if (!draggedItemId) {
+      setLocalItems(menuItems);
+    }
+  }, [menuItems, draggedItemId]);
 
   // Load existing order when editOrderId changes
   useEffect(() => {
@@ -89,7 +99,7 @@ export default function POS() {
   }, [editOrderId, activeOrders, menuItems, loadedOrderId]);
 
   const availableTables = tables.filter(t => t.status === 'available' || (editOrderId && t.order?.id === editOrderId));
-  const enabledItems = menuItems.filter(item => item.enabled);
+  const enabledItems = localItems.filter(item => item.enabled);
 
   const filteredItems = enabledItems.filter(item => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -214,7 +224,19 @@ export default function POS() {
             <h1>{editOrderId ? `Edit Order ${editOrderId}` : 'New Order'}</h1>
             <p className="text-muted">{editOrderId ? 'Modify items in this active order' : 'Select items to add to the order'}</p>
           </div>
-          <div className="search-bar">
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {canSetCustomerName && (
+              <button 
+                className={`btn ${isRearrangeMode ? 'btn-primary' : 'btn-outline'}`}
+                style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
+                onClick={() => setIsRearrangeMode(!isRearrangeMode)}
+                title="Toggle Rearrange Mode"
+              >
+                <Move size={18} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{isRearrangeMode ? 'Done' : 'Rearrange'}</span>
+              </button>
+            )}
+            <div className="search-bar">
             <Search size={20} className="text-muted" />
             <input
               type="text"
@@ -222,6 +244,7 @@ export default function POS() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            </div>
           </div>
         </header>
 
@@ -239,7 +262,42 @@ export default function POS() {
 
         <div className="menu-grid">
           {filteredItems.map(item => (
-            <div key={item.id} className="menu-card card" onClick={() => addToCart(item)}>
+            <div 
+              key={item.id} 
+              className={`menu-card card ${draggedItemId === item.id ? 'dragging' : ''} ${isRearrangeMode ? 'rearrange-mode' : ''}`}
+              onClick={() => !isRearrangeMode && addToCart(item)}
+              draggable={isRearrangeMode}
+              onDragStart={(e) => {
+                if (!isRearrangeMode) return;
+                setDraggedItemId(item.id);
+                e.dataTransfer.effectAllowed = "move";
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (!isRearrangeMode || !draggedItemId || draggedItemId === item.id) return;
+                const draggedIndex = localItems.findIndex(i => i.id === draggedItemId);
+                const targetIndex = localItems.findIndex(i => i.id === item.id);
+                if (draggedIndex !== -1 && targetIndex !== -1) {
+                  const newItems = [...localItems];
+                  const [removed] = newItems.splice(draggedIndex, 1);
+                  newItems.splice(targetIndex, 0, removed);
+                  setLocalItems(newItems);
+                }
+              }}
+              onDrop={async (e) => {
+                if (!isRearrangeMode) return;
+                e.preventDefault();
+                setDraggedItemId(null);
+                try {
+                  await reorderMenuItems(localItems);
+                } catch (err) {
+                  alert(`Failed to save new order: ${err.message}`);
+                }
+              }}
+              onDragEnd={() => {
+                setDraggedItemId(null);
+              }}
+            >
               <div
                 className="menu-card-image"
                 style={{
@@ -254,12 +312,14 @@ export default function POS() {
                 <h3>{item.name}</h3>
                 <div className="menu-card-footer">
                   <span className="price">₹{item.price}</span>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); addToCart(item); }}
-                    className="add-btn"
-                  >
-                    <Plus size={16} />
-                  </button>
+                  {!isRearrangeMode && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); addToCart(item); }}
+                      className="add-btn"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
