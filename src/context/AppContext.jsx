@@ -566,7 +566,7 @@ export function AppProvider({ children }) {
   const addMenuItem = async (item) => {
     const tempId = Date.now();
     // Optimistic update
-    setMenuItems(prev => [...prev, { ...item, id: tempId, enabled: true }]);
+    setMenuItems(prev => [...prev, { ...item, id: tempId, enabled: true, availableOnline: true }]);
     try {
       const res = await fetch(`${API_BASE}/api/menu`, {
         method: 'POST',
@@ -628,6 +628,30 @@ export function AppProvider({ children }) {
       console.error('toggleMenuItemEnabled failed — rolling back:', e.message);
       // Rollback
       setMenuItems(prev => prev.map(i => i.id === itemId ? { ...i, enabled: item.enabled } : i));
+      throw e;
+    }
+  };
+
+  const toggleMenuItemOnline = async (itemId) => {
+    const item = menuItems.find(i => i.id === itemId);
+    if (!item) return;
+    const nextOnline = !item.availableOnline;
+    // Optimistic update
+    setMenuItems(prev => prev.map(i => i.id === itemId ? { ...i, availableOnline: nextOnline } : i));
+    try {
+      const res = await fetch(`${API_BASE}/api/menu/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ availableOnline: nextOnline })
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.details || errBody.error || `HTTP ${res.status}`);
+      }
+    } catch (e) {
+      console.error('toggleMenuItemOnline failed — rolling back:', e.message);
+      // Rollback
+      setMenuItems(prev => prev.map(i => i.id === itemId ? { ...i, availableOnline: item.availableOnline } : i));
       throw e;
     }
   };
@@ -898,7 +922,7 @@ export function AppProvider({ children }) {
       tables, activeOrders, orderHistory, menuItems, groceryItems, storeInventory, storeOrders, supplierOrders, dataErrors, foodCategories,
       refreshData,
       placeOrder, updateOrder, correctHistoricalOrder, settlePayLaterOrder, logOldSettlement, updateOrderItemQuantity, markOrderReady, closeOrder, deleteOrder, freeTable, updateTableStatus,
-      addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, reorderMenuItems, addFoodCategory, removeFoodCategory,
+      addMenuItem, removeMenuItem, toggleMenuItemEnabled, toggleMenuItemOnline, updateMenuItem, reorderMenuItems, addFoodCategory, removeFoodCategory,
       addGroceryItem, toggleGroceryItem, removeGroceryItem, clearPurchasedGrocery,
       addStoreItem, updateStoreItemStock, checkoutStoreOrder, placeSupplierOrder, updateSupplierOrder,
       sidebarOpen, sidebarMinimized, toggleSidebarMinimized, toggleSidebarOpen, closeSidebar,

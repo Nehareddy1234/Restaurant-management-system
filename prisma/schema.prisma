@@ -54,14 +54,15 @@ model OrderItem {
 }
 
 model MenuItem {
-  id         Int         @id @default(autoincrement())
-  name       String
-  category   String
-  price      Int
-  enabled    Boolean     @default(true)
-  image      String?
-  orderIndex Int         @default(0)
-  orders     OrderItem[]
+  id              Int         @id @default(autoincrement())
+  name            String
+  category        String
+  price           Int
+  enabled         Boolean     @default(true)
+  availableOnline Boolean     @default(true)
+  image           String?
+  orderIndex      Int         @default(0)
+  orders          OrderItem[]
 }
 
 model GroceryItem {

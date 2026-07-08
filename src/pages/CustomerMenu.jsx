@@ -23,6 +23,7 @@ export default function CustomerMenu() {
 
   const filteredItems = menuItems.filter(item => {
     if (item.enabled === false) return false;
+    if (item.availableOnline === false) return false;
     const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCat && matchesSearch;

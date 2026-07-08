@@ -494,6 +494,7 @@ export default async function handler(req, res) {
             price: body.price,
             image: body.image || null,
             enabled: true,
+            availableOnline: true,
           },
         });
 
@@ -514,6 +515,7 @@ export default async function handler(req, res) {
             price: body.price !== undefined ? body.price : undefined,
             image: body.image !== undefined ? body.image : undefined,
             enabled: body.enabled !== undefined ? body.enabled : undefined,
+            availableOnline: body.availableOnline !== undefined ? body.availableOnline : undefined,
           },
         });
 

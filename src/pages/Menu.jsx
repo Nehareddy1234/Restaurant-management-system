@@ -17,7 +17,7 @@ const CATEGORY_PALETTE = [
 ];
 
 export default function Menu() {
-  const { menuItems, addMenuItem, removeMenuItem, toggleMenuItemEnabled, updateMenuItem, foodCategories, addFoodCategory, removeFoodCategory } = useApp();
+  const { menuItems, addMenuItem, removeMenuItem, toggleMenuItemEnabled, toggleMenuItemOnline, updateMenuItem, foodCategories, addFoodCategory, removeFoodCategory } = useApp();
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState(foodCategories?.[0]?.name || '');
@@ -30,6 +30,21 @@ export default function Menu() {
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [catError, setCatError] = useState('');
+
+  const [expandedCategories, setExpandedCategories] = useState({});
+
+  const toggleCategory = (catName) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [catName]: prev[catName] === undefined ? false : !prev[catName]
+    }));
+  };
+
+  const groupedItems = menuItems.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = [];
+    acc[item.category].push(item);
+    return acc;
+  }, {});
 
   const handleStartEdit = (item) => {
     setEditingItem(item);
@@ -210,85 +225,82 @@ export default function Menu() {
           </div>
         </div>
 
-        {/* Dishes List */}
+        {/* Dishes Accordion List */}
         <div className="items-list-card card">
           <h2>Current Dishes ({menuItems.length})</h2>
-          <div className="items-table-container">
+          <div className="items-accordion-container">
             {menuItems.length === 0 ? (
               <p className="empty-msg">No dishes in the menu. Add one above!</p>
             ) : (
-              <>
-                <table className="menu-items-table desktop-table">
-                  <thead>
-                    <tr>
-                      <th>Dish</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {menuItems.map(item => {
-                      const pal = getCatPalette(item.category);
-                      return (
-                        <tr key={item.id} className={item.enabled ? '' : 'item-disabled'}>
-                          <td>
-                            <div className="table-dish-info">
-                              <div className="dish-img" style={{ backgroundImage: `url("${item.image}"), url("https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200")` }} />
-                              <span className="dish-name">{item.name}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <span className="dish-category-badge" style={{ background: pal.bg, borderColor: pal.border, color: pal.text }}>
-                              {item.category}
+              <div className="accordion-list">
+                {Object.entries(groupedItems).map(([catName, items]) => {
+                  const isExpanded = expandedCategories[catName] !== false; // default expanded
+                  const outOfStockCount = items.filter(i => !i.enabled || !i.availableOnline).length;
+                  return (
+                    <div key={catName} className="accordion-group">
+                      <div className="accordion-header" onClick={() => toggleCategory(catName)}>
+                        <div className="accordion-header-info">
+                          <h3>{catName} <span className="cat-count">{items.length}</span></h3>
+                          {outOfStockCount > 0 && (
+                            <span className="out-of-stock-alert">
+                              {outOfStockCount} out of {items.length} items are offline/disabled
                             </span>
-                          </td>
-                          <td><strong className="dish-price">₹{item.price}</strong></td>
-                          <td>
-                            <button className={`status-toggle-btn ${item.enabled ? 'enabled' : 'disabled'}`} onClick={() => toggleMenuItemEnabled(item.id)}>
-                              {item.enabled
-                                ? <><ToggleRight size={24} color="var(--success)" /><span className="status-text">Active</span></>
-                                : <><ToggleLeft size={24} color="var(--text-muted)" /><span className="status-text">Disabled</span></>}
-                            </button>
-                          </td>
-                          <td>
-                            <div className="dish-actions">
-                              <button className="edit-dish-btn" onClick={() => handleStartEdit(item)} title="Edit"><Edit size={16} /></button>
-                              <button className="delete-dish-btn" title="Delete" onClick={async () => {
-                                if (window.confirm(`Delete ${item.name}?`)) {
-                                  try { await removeMenuItem(item.id); } catch (err) { setError(`Failed: ${err.message}`); }
-                                }
-                              }}><Trash2 size={16} /></button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-
-                <div className="mobile-items-list">
-                  {menuItems.map(item => (
-                    <div key={item.id} className={`mobile-item-card ${item.enabled ? '' : 'item-disabled'}`}>
-                      <div className="mobile-item-header">
-                        <div className="mobile-item-info">
-                          <span className="dish-name">{item.name}</span>
-                          <span className="dish-category-badge">{item.category}</span>
+                          )}
                         </div>
-                        <strong className="dish-price">₹{item.price}</strong>
+                        <div className="accordion-icon">
+                          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </div>
                       </div>
-                      <div className="mobile-item-actions">
-                        <button className={`status-toggle-btn ${item.enabled ? 'enabled' : 'disabled'}`} onClick={() => toggleMenuItemEnabled(item.id)}>
-                          {item.enabled ? <ToggleRight size={20} color="var(--success)" /> : <ToggleLeft size={20} color="var(--text-muted)" />}
-                        </button>
-                        <button className="edit-dish-btn" onClick={() => handleStartEdit(item)}><Edit size={16} /></button>
-                        <button className="delete-dish-btn" onClick={async () => {
-                          if (window.confirm(`Delete ${item.name}?`)) {
-                            try { await removeMenuItem(item.id); } catch (err) { setError(`Failed: ${err.message}`); }
-                          }
-                        }}><Trash2 size={16} /></button>
-                      </div>
+                      
+                      {isExpanded && (
+                        <div className="accordion-content">
+                          {items.map(item => (
+                            <div key={item.id} className="accordion-item-row">
+                              <div className="accordion-item-main">
+                                <div className="accordion-item-veg-icon">
+                                  {/* Dummy veg icon placeholder, replace with actual logic if present */}
+                                  <div className="veg-indicator"><div className="dot"></div></div>
+                                </div>
+                                <div className="accordion-item-details">
+                                  <span className="dish-name">{item.name}</span>
+                                  {(!item.enabled || !item.availableOnline) ? (
+                                    <span className="dish-status out-stock">Unavailable</span>
+                                  ) : (
+                                    <span className="dish-status in-stock">In stock</span>
+                                  )}
+                                  <span className="dish-price">₹{item.price}</span>
+                                </div>
+                              </div>
+                              <div className="accordion-item-actions">
+                                <div className="toggle-group" title="POS Status (Restaurant)">
+                                  <span className="toggle-label">POS</span>
+                                  <button className={`switch-btn ${item.enabled ? 'on' : 'off'}`} onClick={() => toggleMenuItemEnabled(item.id)}>
+                                    <div className="switch-thumb"></div>
+                                  </button>
+                                </div>
+                                <div className="toggle-group" title="Online Status (Customer App)">
+                                  <span className="toggle-label">Online</span>
+                                  <button className={`switch-btn ${item.availableOnline ? 'on' : 'off'}`} onClick={() => toggleMenuItemOnline(item.id)}>
+                                    <div className="switch-thumb"></div>
+                                  </button>
+                                </div>
+                                <div className="item-action-btns">
+                                  <button className="icon-btn edit-btn" onClick={() => handleStartEdit(item)} title="Edit"><Edit size={16} /></button>
+                                  <button className="icon-btn delete-btn" title="Delete" onClick={async () => {
+                                    if (window.confirm(`Delete ${item.name}?`)) {
+                                      try { await removeMenuItem(item.id); } catch (err) { setError(`Failed: ${err.message}`); }
+                                    }
+                                  }}><Trash2 size={16} /></button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
