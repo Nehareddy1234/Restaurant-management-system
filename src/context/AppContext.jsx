@@ -16,8 +16,72 @@ const initialTables = [
   { id: 7, name: 'T7', capacity: 2, status: 'available', order: null },
 ];
 
-// No hardcoded fallback — always load from the database
-const initialMenuItems = [];
+// Demo data for showcasing without backend
+const initialMenuItems = [
+  // Appetizers
+  { id: 1, name: 'Samosa (4 pcs)', category: 'Appetizers', price: 6000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 8000, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 10000, enabled: true, availableOnline: true, orderIndex: 3 },
+  // Main Course
+  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 20000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 25000, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 22000, enabled: true, availableOnline: true, orderIndex: 3 },
+  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 12000, enabled: true, availableOnline: true, orderIndex: 4 },
+  // Biryani
+  { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 28000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 32000, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 18000, enabled: true, availableOnline: true, orderIndex: 3 },
+  // Bread
+  { id: 11, name: 'Naan (2 pcs)', category: 'Bread', price: 5000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 6000, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 13, name: 'Paratha (2 pcs)', category: 'Bread', price: 7000, enabled: true, availableOnline: true, orderIndex: 3 },
+  // Rice
+  { id: 14, name: 'Plain Rice', category: 'Rice', price: 4000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 15, name: 'Jeera Rice', category: 'Rice', price: 6000, enabled: true, availableOnline: true, orderIndex: 2 },
+  // Desserts
+  { id: 16, name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 8000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 17, name: 'Kheer', category: 'Desserts', price: 6000, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 18, name: 'Jalebi', category: 'Desserts', price: 7000, enabled: true, availableOnline: true, orderIndex: 3 },
+  // Beverages
+  { id: 19, name: 'Masala Chai', category: 'Beverages', price: 3000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 20, name: 'Lassi', category: 'Beverages', price: 5000, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 21, name: 'Mango Juice', category: 'Beverages', price: 6000, enabled: true, availableOnline: true, orderIndex: 3 },
+  // Specials
+  { id: 22, name: 'Curry Rice Combo', category: 'Specials', price: 25000, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 23, name: 'Family Feast', category: 'Specials', price: 120000, enabled: true, availableOnline: true, orderIndex: 2 },
+];
+
+const initialFoodCategories = [
+  { id: 1, name: 'Appetizers' },
+  { id: 2, name: 'Main Course' },
+  { id: 3, name: 'Biryani' },
+  { id: 4, name: 'Bread' },
+  { id: 5, name: 'Rice' },
+  { id: 6, name: 'Desserts' },
+  { id: 7, name: 'Beverages' },
+  { id: 8, name: 'Specials' },
+];
+
+const initialGroceryItems = [
+  { id: 1, name: 'Rice (20kg)', quantity: 50, unit: 'kg', purchased: true },
+  { id: 2, name: 'Flour (20kg)', quantity: 30, unit: 'kg', purchased: true },
+  { id: 3, name: 'Chicken', quantity: 100, unit: 'kg', purchased: true },
+  { id: 4, name: 'Mutton', quantity: 50, unit: 'kg', purchased: false },
+  { id: 5, name: 'Paneer', quantity: 20, unit: 'kg', purchased: true },
+  { id: 6, name: 'Onions', quantity: 100, unit: 'kg', purchased: true },
+  { id: 7, name: 'Tomatoes', quantity: 80, unit: 'kg', purchased: true },
+  { id: 8, name: 'Garlic', quantity: 10, unit: 'kg', purchased: true },
+  { id: 9, name: 'Ginger', quantity: 5, unit: 'kg', purchased: true },
+  { id: 10, name: 'Spices Mix', quantity: 50, unit: 'packets', purchased: true },
+];
+
+const initialStoreInventory = [
+  { id: 'prod-001', name: 'Organic Curry Powder (500g)', category: 'Spices', price: 20000, stock: 50, lowStockThreshold: 20, buyingCost: 12000 },
+  { id: 'prod-002', name: 'Basmati Rice (5kg)', category: 'Grains', price: 35000, stock: 100, lowStockThreshold: 30, buyingCost: 25000 },
+  { id: 'prod-003', name: 'Edible Oil (2L)', category: 'Oils', price: 40000, stock: 45, lowStockThreshold: 15, buyingCost: 28000 },
+  { id: 'prod-004', name: 'Chickpea Flour (1kg)', category: 'Flours', price: 15000, stock: 80, lowStockThreshold: 25, buyingCost: 9000 },
+  { id: 'prod-005', name: 'Whole Wheat Flour (5kg)', category: 'Flours', price: 25000, stock: 60, lowStockThreshold: 20, buyingCost: 16000 },
+];
 
 const IST_TIME_OPTIONS = {
   timeZone: 'Asia/Kolkata',
@@ -82,9 +146,9 @@ export function AppProvider({ children }) {
   const [activeOrders, setActiveOrders] = useState([]);
   const [orderHistory, setOrderHistory] = useState([]);
   const [menuItems, setMenuItems] = useState(initialMenuItems);
-  const [foodCategories, setFoodCategories] = useState([]);
-  const [groceryItems, setGroceryItems] = useState([]);
-  const [storeInventory, setStoreInventory] = useState([]);
+  const [foodCategories, setFoodCategories] = useState(initialFoodCategories);
+  const [groceryItems, setGroceryItems] = useState(initialGroceryItems);
+  const [storeInventory, setStoreInventory] = useState(initialStoreInventory);
   const [storeOrders, setStoreOrders] = useState([]);
   const [supplierOrders, setSupplierOrders] = useState([]);
   const [dataErrors, setDataErrors] = useState({});

@@ -8,7 +8,8 @@
     "server": "node api/dev-server.js",
     "build": "prisma generate && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "prisma db seed"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
