@@ -84,7 +84,7 @@ function AppContent() {
           <HamburgerIcon size={24} />
         </button>
         <div className="mobile-brand-logo">NK</div>
-        <span className="mobile-brand-title">Neha's Kitchen</span>
+        <span className="mobile-brand-title">Restaurant Management System</span>
       </header>
 
       {/* Mobile Backdrop */}

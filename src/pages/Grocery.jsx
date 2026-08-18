@@ -27,7 +27,7 @@ export default function Grocery() {
       <header className="grocery-header">
         <div>
           <h1>Grocery &amp; Ingredients List</h1>
-          <p className="text-muted">Keep track of necessary ingredients to buy for Neha's Kitchen</p>
+          <p className="text-muted">Keep track of necessary ingredients to buy for the restaurant</p>
         </div>
       </header>
 

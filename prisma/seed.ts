@@ -2,6 +2,24 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+const menuImageByCategory: Record<string, string> = {
+  Appetizers: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+  'Main Course': 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80',
+  Biryani: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80',
+  Bread: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80',
+  Rice: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
+  Desserts: 'https://images.unsplash.com/photo-1666190092159-3171cf470b53?auto=format&fit=crop&w=600&q=80',
+  Beverages: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=600&q=80',
+  Specials: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80',
+};
+
+const storeImageByCategory: Record<string, string> = {
+  Spices: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80',
+  Grains: 'https://images.unsplash.com/photo-1586208958839-06c17cacdf08?auto=format&fit=crop&w=600&q=80',
+  Oils: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80',
+  Flours: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80',
+};
+
 async function main() {
   console.log('🌱 Starting seed data insertion...');
 
@@ -138,37 +156,39 @@ async function main() {
   await prisma.menuItem.createMany({
     data: [
       // Appetizers
-      { name: 'Samosa (4 pcs)', category: 'Appetizers', price: 6000, orderIndex: 1 },
-      { name: 'Pakora Mix', category: 'Appetizers', price: 8000, orderIndex: 2 },
-      { name: 'Uggani Bajji', category: 'Appetizers', price: 10000, orderIndex: 3 },
+      { name: 'Samosa (4 pcs)', category: 'Appetizers', price: 80, orderIndex: 1 },
+      { name: 'Pakora Mix', category: 'Appetizers', price: 110, orderIndex: 2 },
+      { name: 'Uggani Bajji', category: 'Appetizers', price: 90, orderIndex: 3 },
       // Main Course
-      { name: 'Chicken Curry', category: 'Main Course', price: 20000, orderIndex: 1 },
-      { name: 'Mutton Curry', category: 'Main Course', price: 25000, orderIndex: 2 },
-      { name: 'Paneer Butter Masala', category: 'Main Course', price: 22000, orderIndex: 3 },
-      { name: 'Chana Masala', category: 'Main Course', price: 12000, orderIndex: 4 },
+      { name: 'Chicken Curry', category: 'Main Course', price: 260, orderIndex: 1 },
+      { name: 'Mutton Curry', category: 'Main Course', price: 340, orderIndex: 2 },
+      { name: 'Paneer Butter Masala', category: 'Main Course', price: 240, orderIndex: 3 },
+      { name: 'Chana Masala', category: 'Main Course', price: 180, orderIndex: 4 },
       // Biryani
-      { name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 28000, orderIndex: 1 },
-      { name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 32000, orderIndex: 2 },
-      { name: 'Vegetable Biryani', category: 'Biryani', price: 18000, orderIndex: 3 },
+      { name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 280, orderIndex: 1 },
+      { name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, orderIndex: 2 },
+      { name: 'Vegetable Biryani', category: 'Biryani', price: 220, orderIndex: 3 },
       // Bread
-      { name: 'Naan (2 pcs)', category: 'Bread', price: 5000, orderIndex: 1 },
-      { name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 6000, orderIndex: 2 },
-      { name: 'Paratha (2 pcs)', category: 'Bread', price: 7000, orderIndex: 3 },
+      { name: 'Naan (2 pcs)', category: 'Bread', price: 60, orderIndex: 1 },
+      { name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 70, orderIndex: 2 },
+      { name: 'Paratha (2 pcs)', category: 'Bread', price: 80, orderIndex: 3 },
       // Rice
-      { name: 'Plain Rice', category: 'Rice', price: 4000, orderIndex: 1 },
-      { name: 'Jeera Rice', category: 'Rice', price: 6000, orderIndex: 2 },
+      { name: 'Plain Rice', category: 'Rice', price: 100, orderIndex: 1 },
+      { name: 'Jeera Rice', category: 'Rice', price: 130, orderIndex: 2 },
       // Desserts
-      { name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 8000, orderIndex: 1 },
-      { name: 'Kheer', category: 'Desserts', price: 6000, orderIndex: 2 },
-      { name: 'Jalebi', category: 'Desserts', price: 7000, orderIndex: 3 },
+      { name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 90, orderIndex: 1 },
+      { name: 'Kheer', category: 'Desserts', price: 100, orderIndex: 2 },
+      { name: 'Jalebi', category: 'Desserts', price: 90, orderIndex: 3 },
       // Beverages
-      { name: 'Masala Chai', category: 'Beverages', price: 3000, orderIndex: 1 },
-      { name: 'Lassi', category: 'Beverages', price: 5000, orderIndex: 2 },
-      { name: 'Mango Juice', category: 'Beverages', price: 6000, orderIndex: 3 },
+      { name: 'Masala Chai', category: 'Beverages', price: 30, orderIndex: 1 },
+      { name: 'Lassi', category: 'Beverages', price: 70, orderIndex: 2 },
+      { name: 'Mango Juice', category: 'Beverages', price: 80, orderIndex: 3 },
       // Specials
-      { name: 'Curry Rice Combo', category: 'Specials', price: 25000, orderIndex: 1 },
-      { name: 'Family Feast', category: 'Specials', price: 120000, orderIndex: 2 },
-    ],
+      { name: 'Curry Rice Combo', category: 'Specials', price: 260, orderIndex: 1 },
+      { name: 'Family Feast', category: 'Specials', price: 1499, orderIndex: 2 },
+      { name: 'Prawn Biryani', category: 'Biryani', price: 390, orderIndex: 4 },
+      { name: 'Buttermilk', category: 'Beverages', price: 45, orderIndex: 4 },
+    ].map(item => ({ ...item, image: menuImageByCategory[item.category] })),
   });
 
   // Seed Daily Order Sequence
@@ -188,7 +208,7 @@ async function main() {
       {
         id: 'order-demo-001',
         tableId: 1,
-        total: 65000,
+        total: 530,
         status: 'completed',
         customerId: 'customer-id-001',
         orderNumber: 1,
@@ -202,7 +222,7 @@ async function main() {
       {
         id: 'order-demo-002',
         tableId: 3,
-        total: 78000,
+        total: 600,
         status: 'completed',
         customerId: 'customer-id-002',
         orderNumber: 2,
@@ -216,7 +236,7 @@ async function main() {
       {
         id: 'order-demo-003',
         tableId: 5,
-        total: 45000,
+        total: 890,
         status: 'in-progress',
         orderNumber: 3,
         paymentMethod: 'Cash',
@@ -227,7 +247,7 @@ async function main() {
       },
       {
         id: 'order-demo-004',
-        total: 32000,
+        total: 340,
         status: 'completed',
         customerId: 'customer-id-003',
         orderNumber: 4,
@@ -241,7 +261,7 @@ async function main() {
       {
         id: 'order-demo-005',
         tableId: 2,
-        total: 55000,
+        total: 350,
         status: 'ready',
         orderNumber: 5,
         paymentMethod: 'Cash',
@@ -300,31 +320,31 @@ async function main() {
       {
         description: 'Gas Cylinder',
         category: 'Utilities',
-        amount: 50000,
+        amount: 1200,
         date: new Date(Date.now() - 86400000),
       },
       {
         description: 'Staff Salary - August',
         category: 'Salaries',
-        amount: 1500000,
+        amount: 150000,
         date: new Date(Date.now() - 172800000),
       },
       {
         description: 'Rent Payment',
         category: 'Rent',
-        amount: 1000000,
+        amount: 55000,
         date: new Date(Date.now() - 259200000),
       },
       {
         description: 'Cleaning Supplies',
         category: 'Maintenance',
-        amount: 80000,
+        amount: 2800,
         date: new Date(),
       },
       {
         description: 'Electricity Bill',
         category: 'Utilities',
-        amount: 250000,
+        amount: 18000,
         date: new Date(Date.now() - 432000000),
       },
     ],
@@ -338,8 +358,8 @@ async function main() {
         id: 'prod-001',
         name: 'Organic Curry Powder (500g)',
         category: 'Spices',
-        price: 20000,
-        buyingCost: 12000,
+        price: 180,
+        buyingCost: 125,
         stock: 50,
         lowStockThreshold: 20,
       },
@@ -347,8 +367,8 @@ async function main() {
         id: 'prod-002',
         name: 'Basmati Rice (5kg)',
         category: 'Grains',
-        price: 35000,
-        buyingCost: 25000,
+        price: 720,
+        buyingCost: 600,
         stock: 100,
         lowStockThreshold: 30,
       },
@@ -356,8 +376,8 @@ async function main() {
         id: 'prod-003',
         name: 'Edible Oil (2L)',
         category: 'Oils',
-        price: 40000,
-        buyingCost: 28000,
+        price: 360,
+        buyingCost: 290,
         stock: 45,
         lowStockThreshold: 15,
       },
@@ -365,8 +385,8 @@ async function main() {
         id: 'prod-004',
         name: 'Chickpea Flour (1kg)',
         category: 'Flours',
-        price: 15000,
-        buyingCost: 9000,
+        price: 95,
+        buyingCost: 75,
         stock: 80,
         lowStockThreshold: 25,
       },
@@ -374,8 +394,8 @@ async function main() {
         id: 'prod-005',
         name: 'Whole Wheat Flour (5kg)',
         category: 'Flours',
-        price: 25000,
-        buyingCost: 16000,
+        price: 310,
+        buyingCost: 260,
         stock: 60,
         lowStockThreshold: 20,
       },
@@ -383,8 +403,8 @@ async function main() {
         id: 'prod-006',
         name: 'Fennel Seeds (500g)',
         category: 'Spices',
-        price: 18000,
-        buyingCost: 11000,
+        price: 150,
+        buyingCost: 115,
         stock: 35,
         lowStockThreshold: 15,
       },
@@ -392,8 +412,8 @@ async function main() {
         id: 'prod-007',
         name: 'Turmeric Powder (500g)',
         category: 'Spices',
-        price: 12000,
-        buyingCost: 7000,
+        price: 100,
+        buyingCost: 75,
         stock: 90,
         lowStockThreshold: 30,
       },
@@ -401,12 +421,12 @@ async function main() {
         id: 'prod-008',
         name: 'Black Pepper (500g)',
         category: 'Spices',
-        price: 30000,
-        buyingCost: 20000,
+        price: 420,
+        buyingCost: 350,
         stock: 25,
         lowStockThreshold: 10,
       },
-    ],
+    ].map(item => ({ ...item, image: storeImageByCategory[item.category] })),
   });
 
   // Seed Supplier Orders
@@ -417,7 +437,7 @@ async function main() {
         id: 'supplier-order-001',
         supplierName: 'Spice King Traders',
         status: 'Received',
-        totalAmount: 500000,
+        totalAmount: 6050,
         paymentStatus: 'Paid',
         orderDate: new Date(Date.now() - 604800000),
         receiveDate: new Date(Date.now() - 518400000),
@@ -427,7 +447,7 @@ async function main() {
         id: 'supplier-order-002',
         supplierName: 'Rice Mills Limited',
         status: 'Ordered',
-        totalAmount: 850000,
+        totalAmount: 15000,
         paymentStatus: 'Unpaid',
         orderDate: new Date(Date.now() - 86400000),
       },
@@ -435,7 +455,7 @@ async function main() {
         id: 'supplier-order-003',
         supplierName: 'Fresh Grains Co',
         status: 'Received',
-        totalAmount: 320000,
+        totalAmount: 6900,
         paymentStatus: 'Paid',
         orderDate: new Date(Date.now() - 1209600000),
         receiveDate: new Date(Date.now() - 1123200000),
@@ -448,11 +468,11 @@ async function main() {
   console.log('📋 Seeding supplier order items...');
   await prisma.supplierOrderItem.createMany({
     data: [
-      { supplierOrderId: 'supplier-order-001', productId: 'prod-001', quantity: 30, buyingCost: 12000 },
-      { supplierOrderId: 'supplier-order-001', productId: 'prod-006', quantity: 20, buyingCost: 11000 },
-      { supplierOrderId: 'supplier-order-002', productId: 'prod-002', quantity: 25, buyingCost: 25000 },
-      { supplierOrderId: 'supplier-order-003', productId: 'prod-004', quantity: 40, buyingCost: 9000 },
-      { supplierOrderId: 'supplier-order-003', productId: 'prod-005', quantity: 15, buyingCost: 16000 },
+      { supplierOrderId: 'supplier-order-001', productId: 'prod-001', quantity: 30, buyingCost: 125 },
+      { supplierOrderId: 'supplier-order-001', productId: 'prod-006', quantity: 20, buyingCost: 115 },
+      { supplierOrderId: 'supplier-order-002', productId: 'prod-002', quantity: 25, buyingCost: 600 },
+      { supplierOrderId: 'supplier-order-003', productId: 'prod-004', quantity: 40, buyingCost: 75 },
+      { supplierOrderId: 'supplier-order-003', productId: 'prod-005', quantity: 15, buyingCost: 260 },
     ],
   });
 
@@ -463,14 +483,14 @@ async function main() {
       {
         id: 'store-order-001',
         orderNumber: 'SO-001',
-        totalAmount: 185000,
+        totalAmount: 1980,
         paymentMethod: 'Cash',
         orderDate: new Date(Date.now() - 86400000),
       },
       {
         id: 'store-order-002',
         orderNumber: 'SO-002',
-        totalAmount: 95000,
+        totalAmount: 1535,
         paymentMethod: 'Card',
         orderDate: new Date(Date.now() - 172800000),
       },
@@ -481,10 +501,10 @@ async function main() {
   console.log('📦 Seeding store order items...');
   await prisma.storeOrderItem.createMany({
     data: [
-      { storeOrderId: 'store-order-001', productId: 'prod-001', quantity: 5, price: 20000, buyingCost: 12000 },
-      { storeOrderId: 'store-order-001', productId: 'prod-003', quantity: 3, price: 40000, buyingCost: 28000 },
-      { storeOrderId: 'store-order-002', productId: 'prod-002', quantity: 2, price: 35000, buyingCost: 25000 },
-      { storeOrderId: 'store-order-002', productId: 'prod-004', quantity: 1, price: 15000, buyingCost: 9000 },
+      { storeOrderId: 'store-order-001', productId: 'prod-001', quantity: 5, price: 180, buyingCost: 125 },
+      { storeOrderId: 'store-order-001', productId: 'prod-003', quantity: 3, price: 360, buyingCost: 290 },
+      { storeOrderId: 'store-order-002', productId: 'prod-002', quantity: 2, price: 720, buyingCost: 600 },
+      { storeOrderId: 'store-order-002', productId: 'prod-004', quantity: 1, price: 95, buyingCost: 75 },
     ],
   });
 

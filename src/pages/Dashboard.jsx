@@ -73,7 +73,7 @@ export default function Dashboard() {
         </div>
         <div className="header-brand">
           <ChefHat size={28} color="var(--primary)" />
-          <span>Neha's Kitchen</span>
+          <span>Restaurant Management System</span>
         </div>
       </header>
 

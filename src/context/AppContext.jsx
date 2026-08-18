@@ -16,40 +16,60 @@ const initialTables = [
   { id: 7, name: 'T7', capacity: 2, status: 'available', order: null },
 ];
 
+const menuImageByCategory = {
+  Appetizers: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+  'Main Course': 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80',
+  Biryani: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80',
+  Bread: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80',
+  Rice: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
+  Desserts: 'https://images.unsplash.com/photo-1666190092159-3171cf470b53?auto=format&fit=crop&w=600&q=80',
+  Beverages: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=600&q=80',
+  Specials: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80',
+};
+
+const storeImageByCategory = {
+  Spices: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80',
+  Grains: 'https://images.unsplash.com/photo-1586208958839-06c17cacdf08?auto=format&fit=crop&w=600&q=80',
+  Oils: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80',
+  Flours: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80',
+};
+
 // Demo data for showcasing without backend
 const initialMenuItems = [
   // Appetizers
-  { id: 1, name: 'Samosa (4 pcs)', category: 'Appetizers', price: 6000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 8000, enabled: true, availableOnline: true, orderIndex: 2 },
-  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 10000, enabled: true, availableOnline: true, orderIndex: 3 },
+  { id: 1, name: 'Samosa (4 pcs)', category: 'Appetizers', price: 80, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 110, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 90, enabled: true, availableOnline: true, orderIndex: 3 },
   // Main Course
-  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 20000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 25000, enabled: true, availableOnline: true, orderIndex: 2 },
-  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 22000, enabled: true, availableOnline: true, orderIndex: 3 },
-  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 12000, enabled: true, availableOnline: true, orderIndex: 4 },
+  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3 },
+  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4 },
   // Biryani
-  { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 28000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 32000, enabled: true, availableOnline: true, orderIndex: 2 },
-  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 18000, enabled: true, availableOnline: true, orderIndex: 3 },
+  { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 280, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 220, enabled: true, availableOnline: true, orderIndex: 3 },
   // Bread
-  { id: 11, name: 'Naan (2 pcs)', category: 'Bread', price: 5000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 6000, enabled: true, availableOnline: true, orderIndex: 2 },
-  { id: 13, name: 'Paratha (2 pcs)', category: 'Bread', price: 7000, enabled: true, availableOnline: true, orderIndex: 3 },
+  { id: 11, name: 'Naan (2 pcs)', category: 'Bread', price: 60, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 70, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 13, name: 'Paratha (2 pcs)', category: 'Bread', price: 80, enabled: true, availableOnline: true, orderIndex: 3 },
   // Rice
-  { id: 14, name: 'Plain Rice', category: 'Rice', price: 4000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 15, name: 'Jeera Rice', category: 'Rice', price: 6000, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 14, name: 'Plain Rice', category: 'Rice', price: 100, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 15, name: 'Jeera Rice', category: 'Rice', price: 130, enabled: true, availableOnline: true, orderIndex: 2 },
   // Desserts
-  { id: 16, name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 8000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 17, name: 'Kheer', category: 'Desserts', price: 6000, enabled: true, availableOnline: true, orderIndex: 2 },
-  { id: 18, name: 'Jalebi', category: 'Desserts', price: 7000, enabled: true, availableOnline: true, orderIndex: 3 },
+  { id: 16, name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 17, name: 'Kheer', category: 'Desserts', price: 100, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 18, name: 'Jalebi', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 3 },
   // Beverages
-  { id: 19, name: 'Masala Chai', category: 'Beverages', price: 3000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 20, name: 'Lassi', category: 'Beverages', price: 5000, enabled: true, availableOnline: true, orderIndex: 2 },
-  { id: 21, name: 'Mango Juice', category: 'Beverages', price: 6000, enabled: true, availableOnline: true, orderIndex: 3 },
+  { id: 19, name: 'Masala Chai', category: 'Beverages', price: 30, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 20, name: 'Lassi', category: 'Beverages', price: 70, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 21, name: 'Mango Juice', category: 'Beverages', price: 80, enabled: true, availableOnline: true, orderIndex: 3 },
   // Specials
-  { id: 22, name: 'Curry Rice Combo', category: 'Specials', price: 25000, enabled: true, availableOnline: true, orderIndex: 1 },
-  { id: 23, name: 'Family Feast', category: 'Specials', price: 120000, enabled: true, availableOnline: true, orderIndex: 2 },
-];
+  { id: 22, name: 'Curry Rice Combo', category: 'Specials', price: 260, enabled: true, availableOnline: true, orderIndex: 1 },
+  { id: 23, name: 'Family Feast', category: 'Specials', price: 1499, enabled: true, availableOnline: true, orderIndex: 2 },
+  { id: 24, name: 'Prawn Biryani', category: 'Biryani', price: 390, enabled: true, availableOnline: true, orderIndex: 4 },
+  { id: 25, name: 'Buttermilk', category: 'Beverages', price: 45, enabled: true, availableOnline: true, orderIndex: 4 },
+].map(item => ({ ...item, image: menuImageByCategory[item.category] }));
 
 const initialFoodCategories = [
   { id: 1, name: 'Appetizers' },
@@ -76,11 +96,38 @@ const initialGroceryItems = [
 ];
 
 const initialStoreInventory = [
-  { id: 'prod-001', name: 'Organic Curry Powder (500g)', category: 'Spices', price: 20000, stock: 50, lowStockThreshold: 20, buyingCost: 12000 },
-  { id: 'prod-002', name: 'Basmati Rice (5kg)', category: 'Grains', price: 35000, stock: 100, lowStockThreshold: 30, buyingCost: 25000 },
-  { id: 'prod-003', name: 'Edible Oil (2L)', category: 'Oils', price: 40000, stock: 45, lowStockThreshold: 15, buyingCost: 28000 },
-  { id: 'prod-004', name: 'Chickpea Flour (1kg)', category: 'Flours', price: 15000, stock: 80, lowStockThreshold: 25, buyingCost: 9000 },
-  { id: 'prod-005', name: 'Whole Wheat Flour (5kg)', category: 'Flours', price: 25000, stock: 60, lowStockThreshold: 20, buyingCost: 16000 },
+  { id: 'prod-001', name: 'Organic Curry Powder (500g)', category: 'Spices', price: 180, stock: 50, lowStockThreshold: 20, buyingCost: 125 },
+  { id: 'prod-002', name: 'Basmati Rice (5kg)', category: 'Grains', price: 720, stock: 100, lowStockThreshold: 30, buyingCost: 600 },
+  { id: 'prod-003', name: 'Edible Oil (2L)', category: 'Oils', price: 360, stock: 45, lowStockThreshold: 15, buyingCost: 290 },
+  { id: 'prod-004', name: 'Chickpea Flour (1kg)', category: 'Flours', price: 95, stock: 80, lowStockThreshold: 25, buyingCost: 75 },
+  { id: 'prod-005', name: 'Whole Wheat Flour (5kg)', category: 'Flours', price: 310, stock: 60, lowStockThreshold: 20, buyingCost: 260 },
+].map(item => ({ ...item, image: storeImageByCategory[item.category] }));
+
+const createDemoOrders = () => {
+  const now = Date.now();
+  return [
+    { id: 'demo-active-101', orderNumber: 101, tableId: 3, table: 'Table T3', customerName: 'Aarav', itemList: ['Rayalaseema Chicken Biryani x1', 'Lassi x2'], total: 420, status: 'Preparing', paymentMethod: 'UPI', paymentStatus: 'Pending', createdAt: new Date(now - 18 * 60000).toISOString(), time: '12:42 PM' },
+    { id: 'demo-active-102', orderNumber: 102, tableId: 5, table: 'Table T5', customerName: 'Meera', itemList: ['Paneer Butter Masala x1', 'Naan (2 pcs) x1', 'Jeera Rice x1'], total: 430, status: 'Ready', paymentMethod: 'Cash', paymentStatus: 'Pending', createdAt: new Date(now - 10 * 60000).toISOString(), time: '12:50 PM' },
+    { id: 'demo-paid-098', orderNumber: 98, tableId: 1, table: 'Table T1', customerName: 'Kiran', itemList: ['Vegetable Biryani x1', 'Buttermilk x1'], total: 265, status: 'Paid', paymentMethod: 'Card', paymentStatus: 'Paid', createdAt: new Date(now - 80 * 60000).toISOString(), paidAt: new Date(now - 60 * 60000).toISOString(), closedAt: '12:00 PM' },
+    { id: 'demo-paid-099', orderNumber: 99, table: 'Takeaway', customerName: 'Sana', itemList: ['Chicken Curry x1', 'Paratha (2 pcs) x2'], total: 420, status: 'Paid', paymentMethod: 'UPI', paymentStatus: 'Paid', createdAt: new Date(now - 55 * 60000).toISOString(), paidAt: new Date(now - 45 * 60000).toISOString(), closedAt: '12:15 PM' },
+    { id: 'demo-pay-later-100', orderNumber: 100, table: 'Takeaway', customerName: 'Vikram', itemList: ['Mutton Curry x1', 'Jowar Roti (3 pcs) x1'], total: 410, status: 'Paid', paymentMethod: 'Pay Later', paymentStatus: 'Pending', createdAt: new Date(now - 35 * 60000).toISOString(), closedAt: '12:35 PM' },
+    { id: 'demo-history-094', orderNumber: 94, table: 'Table T2', customerName: 'Nisha', itemList: ['Samosa (4 pcs) x1', 'Masala Chai x2'], total: 140, status: 'Paid', paymentMethod: 'Cash', paymentStatus: 'Paid', createdAt: new Date(now - 1 * 86400000).toISOString(), paidAt: new Date(now - 1 * 86400000 + 12 * 60000).toISOString(), closedAt: '8:42 PM' },
+    { id: 'demo-history-093', orderNumber: 93, table: 'Table T6', customerName: 'Rohit', itemList: ['Rayalaseema Mutton Biryani x2', 'Buttermilk x2'], total: 810, status: 'Paid', paymentMethod: 'Card', paymentStatus: 'Paid', createdAt: new Date(now - 1 * 86400000 - 40 * 60000).toISOString(), paidAt: new Date(now - 1 * 86400000 - 24 * 60000).toISOString(), closedAt: '8:06 PM' },
+    { id: 'demo-history-092', orderNumber: 92, table: 'Takeaway', customerName: 'Divya', itemList: ['Curry Rice Combo x2', 'Mango Juice x2'], total: 680, status: 'Paid', paymentMethod: 'UPI', paymentStatus: 'Paid', createdAt: new Date(now - 2 * 86400000).toISOString(), paidAt: new Date(now - 2 * 86400000 + 9 * 60000).toISOString(), closedAt: '7:35 PM' },
+    { id: 'demo-history-091', orderNumber: 91, table: 'Table T4', customerName: 'Ananya', itemList: ['Paneer Butter Masala x1', 'Naan (2 pcs) x2', 'Gulab Jamun (4 pcs) x1'], total: 450, status: 'Paid', paymentMethod: 'Cash', paymentStatus: 'Paid', createdAt: new Date(now - 3 * 86400000).toISOString(), paidAt: new Date(now - 3 * 86400000 + 17 * 60000).toISOString(), closedAt: '9:17 PM' },
+    { id: 'demo-history-090', orderNumber: 90, table: 'Table T1', customerName: 'Kabir', itemList: ['Prawn Biryani x1', 'Lassi x1'], total: 460, status: 'Paid', paymentMethod: 'Card', paymentStatus: 'Paid', createdAt: new Date(now - 4 * 86400000).toISOString(), paidAt: new Date(now - 4 * 86400000 + 15 * 60000).toISOString(), closedAt: '8:15 PM' },
+    { id: 'demo-history-089', orderNumber: 89, table: 'Takeaway', customerName: 'Ishita', itemList: ['Vegetable Biryani x1', 'Jalebi x1'], total: 310, status: 'Paid', paymentMethod: 'UPI', paymentStatus: 'Paid', createdAt: new Date(now - 5 * 86400000).toISOString(), paidAt: new Date(now - 5 * 86400000 + 11 * 60000).toISOString(), closedAt: '7:11 PM' },
+  ];
+};
+
+const initialStoreOrders = [
+  { id: 'demo-store-001', orderNumber: 'SO-1042', totalAmount: 1080, paymentMethod: 'UPI', orderDate: new Date().toISOString(), items: [{ id: 'prod-003', name: 'Edible Oil (2L)', price: 360, buyingCost: 290, quantity: 2 }, { id: 'prod-001', name: 'Organic Curry Powder (500g)', price: 180, buyingCost: 125, quantity: 2 }] },
+  { id: 'demo-store-002', orderNumber: 'SO-1041', totalAmount: 1535, paymentMethod: 'Card', orderDate: new Date(Date.now() - 86400000).toISOString(), items: [{ id: 'prod-002', name: 'Basmati Rice (5kg)', price: 720, buyingCost: 600, quantity: 2 }, { id: 'prod-004', name: 'Chickpea Flour (1kg)', price: 95, buyingCost: 75, quantity: 1 }] },
+];
+
+const initialSupplierOrders = [
+  { id: 'demo-supplier-001', supplierName: 'Sri Lakshmi Traders', status: 'Received', paymentStatus: 'Paid', totalAmount: 6050, orderDate: new Date(Date.now() - 3 * 86400000).toISOString(), items: [{ productId: 'prod-001', quantity: 30, buyingCost: 125, product: { name: 'Organic Curry Powder (500g)' } }, { productId: 'prod-004', quantity: 30, buyingCost: 75, product: { name: 'Chickpea Flour (1kg)' } }] },
+  { id: 'demo-supplier-002', supplierName: 'Bangalore Rice Mills', status: 'Ordered', paymentStatus: 'Unpaid', totalAmount: 15000, orderDate: new Date(Date.now() - 86400000).toISOString(), items: [{ productId: 'prod-002', quantity: 25, buyingCost: 600, product: { name: 'Basmati Rice (5kg)' } }] },
 ];
 
 const IST_TIME_OPTIONS = {
@@ -133,6 +180,17 @@ const isClosedOrder = (order) => {
   return status === 'paid' || status === 'closed' || status === 'completed';
 };
 
+const DEMO_ORDERS_STORAGE_KEY = 'nehas-kitchen-demo-orders';
+
+const readDemoOrders = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DEMO_ORDERS_STORAGE_KEY) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+};
+
 export function AppProvider({ children }) {
   const [appMode, setAppMode] = useState('restaurant'); // 'restaurant' | 'grocery'
 
@@ -143,14 +201,24 @@ export function AppProvider({ children }) {
     setPaymentMethods(prev => ({ ...prev, [orderId]: method }));
   };
 
-  const [activeOrders, setActiveOrders] = useState([]);
-  const [orderHistory, setOrderHistory] = useState([]);
+  const [activeOrders, setActiveOrders] = useState(() => {
+    const savedOrders = readDemoOrders();
+    const sampleOrders = createDemoOrders();
+    const orders = [...savedOrders, ...sampleOrders.filter(sample => !savedOrders.some(saved => saved.id === sample.id))];
+    return orders.filter(order => !isClosedOrder(order));
+  });
+  const [orderHistory, setOrderHistory] = useState(() => {
+    const savedOrders = readDemoOrders();
+    const sampleOrders = createDemoOrders();
+    const orders = [...savedOrders, ...sampleOrders.filter(sample => !savedOrders.some(saved => saved.id === sample.id))];
+    return orders.filter(isClosedOrder);
+  });
   const [menuItems, setMenuItems] = useState(initialMenuItems);
   const [foodCategories, setFoodCategories] = useState(initialFoodCategories);
   const [groceryItems, setGroceryItems] = useState(initialGroceryItems);
   const [storeInventory, setStoreInventory] = useState(initialStoreInventory);
-  const [storeOrders, setStoreOrders] = useState([]);
-  const [supplierOrders, setSupplierOrders] = useState([]);
+  const [storeOrders, setStoreOrders] = useState(initialStoreOrders);
+  const [supplierOrders, setSupplierOrders] = useState(initialSupplierOrders);
   const [dataErrors, setDataErrors] = useState({});
   const [loading, setLoading] = useState(false);
   // Configurable refresh interval (ms) – default 30 seconds
@@ -158,6 +226,23 @@ export function AppProvider({ children }) {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const isRefreshingRef = useRef(false);
   const pendingClosedOrderIdsRef = useRef(new Set());
+
+  // The production API is optional during demos. Persist completed actions locally
+  // so placing orders and taking payment still works when no API is running.
+  useEffect(() => {
+    try {
+      localStorage.setItem(DEMO_ORDERS_STORAGE_KEY, JSON.stringify([...activeOrders, ...orderHistory]));
+    } catch (error) {
+      console.warn('Unable to persist demo orders locally.', error);
+    }
+  }, [activeOrders, orderHistory]);
+
+  useEffect(() => {
+    setTables(previous => previous.map(table => {
+      const activeOrder = activeOrders.find(order => order.tableId === table.id);
+      return activeOrder ? { ...table, status: 'occupied', order: activeOrder } : table.order ? { ...table, status: 'available', order: null } : table;
+    }));
+  }, [activeOrders]);
 
   const loadBackendData = async () => {
     setLoading(true);
@@ -403,13 +488,12 @@ export function AppProvider({ children }) {
       } else {
         const err = await res.json().catch(() => ({}));
         console.error('placeOrder API error:', err);
-        removeOptimisticOrder(tempId, tableId);
-        throw new Error(err.details || err.error || `Failed to place order (${res.status})`);
+        console.warn('Order API unavailable; order is saved in demo mode.', err);
+        return tempId;
       }
     } catch (e) {
-      console.error('Failed to place order via API', e);
-      removeOptimisticOrder(tempId, tableId);
-      throw e;
+      console.warn('Order API unavailable; order is saved in demo mode.', e);
+      return tempId;
     }
   };
 
@@ -451,27 +535,40 @@ export function AppProvider({ children }) {
     } catch (e) {
       console.error('Failed to update order via API', e);
     }
-    return null;
+    const existingOrder = activeOrders.find(order => order.id === orderId);
+    if (!existingOrder) return null;
+    const locallyUpdatedOrder = {
+      ...existingOrder,
+      ...buildLocalOrder(cartItems, tableId, existingOrder.paymentMethod, customerName ?? existingOrder.customerName, orderId),
+      status: existingOrder.status,
+      paymentStatus: existingOrder.paymentStatus,
+    };
+    setActiveOrders(prev => prev.map(order => order.id === orderId ? locallyUpdatedOrder : order));
+    setTables(prev => prev.map(table => {
+      if (table.order?.id === orderId) return table.id === tableId ? { ...table, order: locallyUpdatedOrder } : { ...table, status: 'available', order: null };
+      return table.id === tableId ? { ...table, status: 'occupied', order: locallyUpdatedOrder } : table;
+    }));
+    console.warn('Order API unavailable; order changes were saved in demo mode.');
+    return orderId;
   };
 
   const correctHistoricalOrder = async (orderId, corrections) => {
-    const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        correction: true,
-        ...corrections,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.details || err.error || `Failed to update order (${res.status})`);
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ correction: true, ...corrections }),
+      });
+      if (!res.ok) throw new Error(`Failed to update order (${res.status})`);
+      const updatedOrder = await res.json();
+      setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
+      return updatedOrder;
+    } catch (error) {
+      const existingOrder = orderHistory.find(order => order.id === orderId);
+      if (!existingOrder) throw error;
+      const updatedOrder = { ...existingOrder, ...corrections };
+      setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
+      console.warn('Order API unavailable; correction was saved in demo mode.', error);
+      return updatedOrder;
     }
-
-    const updatedOrder = await res.json();
-    setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
-    return updatedOrder;
   };
 
   const updateOrderItemQuantity = (orderId, nameToUpdate, delta, isAddOn = null, addOnDelta = 0) => {
@@ -534,14 +631,8 @@ export function AppProvider({ children }) {
         }
         await refreshData();
       } catch (e) {
-        console.error('closeOrder API error', e);
-        pendingClosedOrderIdsRef.current.delete(orderId);
-        setOrderHistory(prev => prev.filter(o => o.id !== orderId));
-        setActiveOrders(prev => prev.some(o => o.id === orderId) ? prev : [order, ...prev]);
-        setTables(prev => prev.map(t =>
-          order.table === `Table ${t.name}` ? { ...t, status: 'occupied', order } : t
-        ));
-        throw e;
+        console.warn('Payment API unavailable; payment was recorded in demo mode.', e);
+        return;
       }
     }
   };
@@ -561,33 +652,31 @@ export function AppProvider({ children }) {
           throw new Error(err.details || err.error || `Failed to delete order (${res.status})`);
         }
       } catch (e) {
-        console.error('deleteOrder API error', e);
-        await refreshData();
-        throw e;
+        console.warn('Delete API unavailable; order was removed in demo mode.', e);
       }
     }
   };
 
   const settlePayLaterOrder = async (orderId, paymentMethod) => {
-    const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        correction: true,
-        paymentStatus: 'Paid',
-        paymentMethod,
-        paidAt: new Date().toISOString(),
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.details || err.error || `Failed to settle payment (${res.status})`);
+    const paidAt = new Date().toISOString();
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correction: true, paymentStatus: 'Paid', paymentMethod, paidAt }),
+      });
+      if (!res.ok) throw new Error(`Failed to settle payment (${res.status})`);
+      const updatedOrder = await res.json();
+      setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
+      return updatedOrder;
+    } catch (error) {
+      const existingOrder = orderHistory.find(order => order.id === orderId);
+      if (!existingOrder) throw error;
+      const updatedOrder = { ...existingOrder, paymentStatus: 'Paid', paymentMethod, paidAt, closedAt: formatIstTime() };
+      setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
+      console.warn('Payment API unavailable; payment was recorded in demo mode.', error);
+      return updatedOrder;
     }
-
-    const updatedOrder = await res.json();
-    setOrderHistory(prev => prev.map(order => order.id === orderId ? updatedOrder : order));
-    return updatedOrder;
   };
 
   const logOldSettlement = async (customerName, amount, paymentMethod, extraData = {}) => {

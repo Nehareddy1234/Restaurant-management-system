@@ -81,7 +81,7 @@ export default function Sidebar() {
     <aside className={`sidebar ${sidebarMinimized ? 'minimized' : ''}`}>
       <div className="sidebar-header" style={{ paddingBottom: '0.5rem', borderBottom: 'none' }}>
         <div className="logo-placeholder">NK</div>
-        {!sidebarMinimized && <h2>Neha's Kitchen</h2>}
+        {!sidebarMinimized && <h2>Restaurant Management System</h2>}
         <button 
           className="sidebar-toggle-btn" 
           onClick={toggleSidebarMinimized}

@@ -117,7 +117,7 @@ export default function CustomerMenu() {
         <div className="customer-brand">
           <span className="customer-brand-icon">🍽️</span>
           <div>
-            <h1 className="customer-brand-title">Neha's Kitchen</h1>
+            <h1 className="customer-brand-title">Restaurant Management System</h1>
             <p className="customer-brand-welcome">Welcome, {currentUser?.displayName}</p>
           </div>
         </div>

@@ -80,7 +80,7 @@ export default function BottomNav() {
       <div className="pill-nav-brand">
         <div className="pill-nav-brand-left">
           <div className="pill-nav-logo">NK</div>
-          <span className="pill-nav-title">Neha's Kitchen</span>
+          <span className="pill-nav-title">Restaurant Management System</span>
         </div>
 
         <div className="pill-nav-brand-right">

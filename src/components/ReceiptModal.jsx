@@ -23,7 +23,7 @@ export default function ReceiptModal({ order, onClose }) {
   const formatCurrency = (value) => `₹${Number(value).toFixed(0)}`;
 
   const handleRawBTPrint = () => {
-    let text = `     Neha's Kitchen\n`;
+    let text = `Restaurant Management System\n`;
     text += `--------------------------------\n`;
     text += `Date: ${order.date || new Date().toLocaleString()}\n`;
     if (order.table) text += `Table: ${order.table}\n`;
@@ -56,7 +56,7 @@ export default function ReceiptModal({ order, onClose }) {
     <div className="receipt-modal-overlay" onClick={onClose}>
       <div className="receipt-modal" onClick={(e) => e.stopPropagation()}>
         <div className="receipt-header">
-          <h2>Neha's Kitchen</h2>
+          <h2>Restaurant Management System</h2>
           <p>{order.date || new Date().toLocaleString()}</p>
           {order.table && <p>Table: {order.table}</p>}
         </div>
