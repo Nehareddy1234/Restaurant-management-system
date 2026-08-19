@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import {  useState  } from 'react';
 import { Search, DollarSign, ShoppingBag, Eye, Calendar, TrendingDown, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './History.css'; // Reuse History CSS
@@ -10,7 +10,7 @@ export default function GroceryHistory() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const filteredHistory = storeOrders.filter(order => {
-    const dateObj = new Date(order.orderDate || order.createdAt || Date.now());
+    const dateObj = new Date(order.orderDate || order.createdAt || '');
     const orderDateStr = getIstDateInputValue(dateObj);
     
     if (dateFilter !== 'All' && orderDateStr !== dateFilter) return false;
@@ -135,7 +135,7 @@ export default function GroceryHistory() {
                 </thead>
                 <tbody>
                   {filteredHistory.map(order => {
-                    const dateObj = new Date(order.orderDate || order.createdAt || Date.now());
+                    const dateObj = new Date(order.orderDate || order.createdAt || '');
                     const dateStr = dateObj.toLocaleDateString();
                     const timeStr = dateObj.toLocaleTimeString();
                     return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import {  useState  } from 'react';
 import { Search, ShoppingCart, Trash2, CreditCard, Banknote, SmartphoneNfc } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './GroceryPOS.css';

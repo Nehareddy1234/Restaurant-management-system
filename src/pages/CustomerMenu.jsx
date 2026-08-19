@@ -5,10 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import './CustomerMenu.css';
 
 export default function CustomerMenu() {
-  const { menuItems, placeOrder, foodCategories } = useApp();
+  const { placeOrder, foodCategories } = useApp();
   const { currentUser, logout } = useAuth();
 
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState([]);
   const [orderType, setOrderType] = useState('Dine-In');
@@ -20,22 +19,6 @@ export default function CustomerMenu() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories = ['All', ...(foodCategories || []).map(c => c.name)];
-
-  const filteredItems = menuItems.filter(item => {
-    if (item.enabled === false) return false;
-    if (item.availableOnline === false) return false;
-    const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesSearch;
-  });
-
-  const addToCart = (item) => {
-    setCart(prev => {
-      const existing = prev.find(c => c.id === item.id);
-      if (existing) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c);
-      return [...prev, { ...item, qty: 1 }];
-    });
-  };
 
   const updateQty = (id, delta) => {
     setCart(prev =>
@@ -118,7 +101,7 @@ export default function CustomerMenu() {
           <span className="customer-brand-icon">🍽️</span>
           <div>
             <h1 className="customer-brand-title">Restaurant Management System</h1>
-            <p className="customer-brand-welcome">Welcome, {currentUser?.displayName}</p>
+            
           </div>
         </div>
 
@@ -153,6 +136,7 @@ export default function CustomerMenu() {
         </button>
       </div>
 
+
       <div className={`customer-layout ${activeTab === 'menu' ? 'show-menu' : 'show-cart'}`}>
         {/* Menu Section */}
         <div className="customer-menu-section">
@@ -171,68 +155,12 @@ export default function CustomerMenu() {
           {/* Category Tabs */}
           <div className="customer-category-tabs">
             {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`customer-category-tab ${selectedCategory === cat ? 'active' : ''}`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Items Grid */}
-          <div className="customer-grid-scroll">
-            <div className="customer-grid">
-              {filteredItems.map(item => (
-                <div key={item.id} className="customer-dish-card">
-                  {item.image ? (
-                    <div 
-                      className="customer-dish-image" 
-                      style={{ backgroundImage: `url("${item.image}"), url("https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200")` }}
-                    />
-                  ) : (
-                    <div className="customer-dish-image-placeholder">
-                      🍛
-                    </div>
-                  )}
-                  <div className="customer-dish-info">
-                    <h3 className="customer-dish-name">{item.name}</h3>
-                    <span className="customer-dish-category">{item.category}</span>
-                    <div className="customer-dish-footer">
-                      <strong className="customer-dish-price">₹{item.price}</strong>
-                      <button
-                        onClick={() => addToCart(item)}
-                        className="customer-dish-add-btn"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Cart Panel */}
-        <div className="customer-cart-panel">
-          <div className="customer-cart-header">
-            <ShoppingCart size={20} color="#e84118" />
-            <h2 className="customer-cart-title">Your Order</h2>
-          </div>
-
-          {/* Order Type */}
-          <div className="customer-cart-type-selector">
-            <div className="customer-cart-type-buttons">
-              {['Dine-In', 'Takeaway'].map(type => (
                 <button
-                  key={type}
-                  onClick={() => setOrderType(type)}
-                  className={`customer-cart-type-btn ${orderType === type ? 'active' : ''}`}
-                >{type}</button>
+                  key={cat}
+                  onClick={() => setOrderType(cat)}
+                  className={`customer-cart-type-btn ${orderType === cat ? 'active' : ''}`}
+                >{cat}</button>
               ))}
-            </div>
             {orderType === 'Dine-In' && (
               <input
                 type="text"

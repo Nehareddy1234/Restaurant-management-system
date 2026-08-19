@@ -195,11 +195,6 @@ export function AppProvider({ children }) {
   const [appMode, setAppMode] = useState('restaurant'); // 'restaurant' | 'grocery'
 
   const [tables, setTables] = useState(initialTables);
-  const [paymentMethods, setPaymentMethods] = useState({});
-
-  const handlePaymentChange = (orderId, method) => {
-    setPaymentMethods(prev => ({ ...prev, [orderId]: method }));
-  };
 
   const [activeOrders, setActiveOrders] = useState(() => {
     const savedOrders = readDemoOrders();
@@ -220,10 +215,9 @@ export function AppProvider({ children }) {
   const [storeOrders, setStoreOrders] = useState(initialStoreOrders);
   const [supplierOrders, setSupplierOrders] = useState(initialSupplierOrders);
   const [dataErrors, setDataErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   // Configurable refresh interval (ms) – default 30 seconds
   const REFRESH_INTERVAL_MS = 120000;
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+  const [autoRefreshEnabled] = useState(true);
   const isRefreshingRef = useRef(false);
   const pendingClosedOrderIdsRef = useRef(new Set());
 
@@ -237,16 +231,17 @@ export function AppProvider({ children }) {
     }
   }, [activeOrders, orderHistory]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setTables(previous => previous.map(table => {
       const activeOrder = activeOrders.find(order => order.tableId === table.id);
       return activeOrder ? { ...table, status: 'occupied', order: activeOrder } : table.order ? { ...table, status: 'available', order: null } : table;
     }));
   }, [activeOrders]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const loadBackendData = async () => {
-    setLoading(true);
-      const endpoints = [
+    const endpoints = [
         ['menu', `${API_BASE}/api/menu`],
         ['tables', `${API_BASE}/api/tables`],
         // Orders are fetched lazily via loadOrders()
@@ -257,7 +252,7 @@ export function AppProvider({ children }) {
         ['supplierOrders', `${API_BASE}/api/supplier-orders`],
       ];
     
-    // Simple in‑memory + localStorage caching (60 s TTL)
+    // Simple in-memory + localStorage caching (60 s TTL)
     const fetchPromises = endpoints.map(async ([key, endpoint]) => {
       try {
         const cacheKey = `cache_${key}`;
@@ -307,26 +302,9 @@ export function AppProvider({ children }) {
     if (responses.storeInventory) setStoreInventory(responses.storeInventory);
     if (responses.storeOrders) setStoreOrders(responses.storeOrders);
     if (responses.supplierOrders) setSupplierOrders(responses.supplierOrders);
-    setLoading(false);
   };
 
-  // Fetch initial data from backend (fallback to defaults if backend not ready)
-  useEffect(() => {
-    const fetchBackendData = async () => {
-      try {
-        await loadBackendData();
-        // Pre‑load orders if auto‑refresh is enabled and user wants them
-        if (autoRefreshEnabled) {
-          await loadOrders();
-        }
-      } catch (err) {
-        console.error("Backend not reachable. Falling back to local state.", err);
-      }
-    };
-    fetchBackendData();
-  }, []);
-
-  // Lazy‑load orders separately to avoid heavy initial payload
+  // Lazy-load orders separately to avoid heavy initial payload
   const loadOrders = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/orders`);
@@ -345,7 +323,38 @@ export function AppProvider({ children }) {
       console.error('Failed to load orders', e);
     }
   };
-  // Auto‑refresh interval – respects autoRefreshEnabled flag
+
+  // Fetch initial data from backend (fallback to defaults if backend not ready)
+  useEffect(() => {
+    const fetchBackendData = async () => {
+      try {
+        await loadBackendData();
+        // Pre-load orders if auto-refresh is enabled and user wants them
+        if (autoRefreshEnabled) {
+          await loadOrders();
+        }
+      } catch (err) {
+        console.error("Backend not reachable. Falling back to local state.", err);
+      }
+    };
+    fetchBackendData();
+  }, []);
+  // Auto-refresh interval - respects autoRefreshEnabled flag
+
+  // Refresh all data from the backend
+  const refreshData = async () => {
+    if (isRefreshingRef.current) return;
+    isRefreshingRef.current = true;
+
+    try {
+      await loadBackendData();
+    } catch (err) {
+      console.error('Refresh failed', err);
+    } finally {
+      isRefreshingRef.current = false;
+    }
+  };
+
   useEffect(() => {
     if (!autoRefreshEnabled) return undefined;
     const intervalId = setInterval(() => {
@@ -380,21 +389,7 @@ export function AppProvider({ children }) {
   const toggleSidebarOpen = () => setSidebarOpen(prev => !prev);
   const closeSidebar = () => setSidebarOpen(false);
 
-  // Refresh all data from the backend
-  const refreshData = async () => {
-    if (isRefreshingRef.current) return;
-    isRefreshingRef.current = true;
-
-    try {
-      await loadBackendData();
-    } catch (err) {
-      console.error('Refresh failed', err);
-    } finally {
-      isRefreshingRef.current = false;
-    }
-  };
-
-  // Removed secondary refresh interval (15 s). The primary auto‑refresh above now runs every REFRESH_INTERVAL_MS (2 min).
+  // Removed secondary refresh interval (15 s). The primary auto-refresh above now runs every REFRESH_INTERVAL_MS (2 min).
 
   const buildLocalOrder = (cartItems, tableId, paymentMethod = 'Cash', customerName = '', id = `local-${Date.now()}`) => {
     const now = new Date();
@@ -440,17 +435,6 @@ export function AppProvider({ children }) {
     if (tableId) {
       setTables(prev => prev.map(t =>
         t.id === tableId ? { ...t, status: 'occupied', order } : t
-      ));
-    }
-  };
-
-  const removeOptimisticOrder = (orderId, tableId) => {
-    setActiveOrders(prev => prev.filter(order => order.id !== orderId));
-    if (tableId) {
-      setTables(prev => prev.map(t =>
-        t.id === tableId && t.order?.id === orderId
-          ? { ...t, status: 'available', order: null }
-          : t
       ));
     }
   };
@@ -571,7 +555,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const updateOrderItemQuantity = (orderId, nameToUpdate, delta, isAddOn = null, addOnDelta = 0) => {
+  const updateOrderItemQuantity = (orderId, nameToUpdate, delta) => {
     // Inline quantity adjustment — reflects in UI only (use Edit Order for full changes)
     setActiveOrders(prev => prev.map(o => {
       if (o.id !== orderId) return o;
@@ -598,7 +582,7 @@ export function AppProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Ready' })
       });
-    } catch (e) {}
+    } catch { /* ignore */ }
   };
 
   const closeOrder = async (orderId, paymentMethod = null) => {
@@ -713,7 +697,7 @@ export function AppProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
-    } catch (e) {}
+    } catch { /* ignore */ }
   };
 
   const addMenuItem = async (item) => {
@@ -924,7 +908,7 @@ export function AppProvider({ children }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ purchased: !item.purchased })
         });
-      } catch (e) {}
+      } catch { /* ignore */ }
     }
   };
 

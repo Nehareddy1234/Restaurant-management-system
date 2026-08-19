@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { DollarSign, Plus, X, CheckCircle } from 'lucide-react';
+import {  useState  } from 'react';
+import { DollarSign } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Catering.css';
 

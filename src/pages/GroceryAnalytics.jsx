@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import {  useState  } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { TrendingUp, DollarSign, ShoppingBag, Percent, Users, Award, TrendingDown, Clock, Store, Calendar, Sparkles, AlertTriangle } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingBag, Percent, Award, TrendingDown, Store, Calendar, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Analytics.css'; // Reusing the same styles as Restaurant Analytics
 
 const COLORS = ['#27ae60', '#f39c12', '#2980b9', '#8e44ad', '#e74c3c', '#16a085'];
-const PIE_COLORS = ['#3498db', '#9b59b6', '#e74c3c', '#f1c40f', '#2ecc71'];
 
 function getIstDateKey(value = new Date()) {
   const dateObj = new Date(value);

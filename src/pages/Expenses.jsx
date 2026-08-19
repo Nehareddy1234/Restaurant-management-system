@@ -65,7 +65,7 @@ export default function Expenses() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const { data: expenses = [], isLoading, error } = useQuery({
+  const { data: expenses = [], isLoading } = useQuery({
     queryKey: ['expenses'],
     queryFn: async () => {
       try {

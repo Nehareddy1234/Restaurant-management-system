@@ -369,7 +369,8 @@ app.post('/api/users/login', async (req, reply) => {
   if (!user || user.password !== password) {
     return reply.code(401).send({ error: 'Invalid username or password.' });
   }
-  const { password: _pw, ...safe } = user;
+  const { id, username: u, displayName: dn, role, phone, address } = user;
+  const safe = { id, username: u, displayName: dn, role, phone, address };
   return safe;
 });
 
@@ -390,7 +391,8 @@ app.post('/api/users/register', async (req, reply) => {
       address: address || null,
     },
   });
-  const { password: _pw, ...safe } = user;
+  const { id, username: u, displayName: dn, role: r, phone: p, address: a } = user;
+  const safe = { id, username: u, displayName: dn, role: r, phone: p, address: a };
   return reply.code(201).send(safe);
 });
 

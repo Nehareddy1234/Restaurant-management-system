@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Plus, Truck, Package, DollarSign, CheckCircle } from 'lucide-react';
+import {  useState  } from 'react';
+import { Search, Plus, Truck, DollarSign } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './History.css'; 
 
@@ -123,7 +123,7 @@ export default function GrocerySupplier() {
                 </thead>
                 <tbody>
                   {filteredOrders.map(order => {
-                    const d = new Date(order.orderDate || Date.now());
+                    const d = new Date(order.orderDate || '');
                     return (
                       <tr key={order.id}>
                         <td>

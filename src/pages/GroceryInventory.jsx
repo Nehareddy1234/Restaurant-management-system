@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { PackageSearch, Plus, Search, Trash2, Edit2, PackagePlus, PackageMinus } from 'lucide-react';
+import {  useState  } from 'react';
+import { Plus, Search, PackagePlus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Menu.css'; // Reusing Menu CSS for layout consistency
 

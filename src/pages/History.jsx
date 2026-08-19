@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import {  useState  } from 'react';
 import { Search, Calendar, DollarSign, ShoppingBag, Eye, Printer, FileText, Banknote, Smartphone, Edit3, Save } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './History.css';

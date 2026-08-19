@@ -154,7 +154,8 @@ export function AuthProvider({ children }) {
     );
 
     if (demoUser) {
-      const { password: _pw, ...safeUser } = demoUser;
+      const { id, username, role, displayName, avatar } = demoUser;
+      const safeUser = { id, username, role, displayName, avatar };
       setCurrentUser(safeUser);
       saveCurrentUser(safeUser);
       return { success: true, user: safeUser };

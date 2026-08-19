@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, CheckCircle2, Circle, ShoppingBasket, Sparkles } from 'lucide-react';
+import {  useState  } from 'react';
+import { Plus, Trash2, CheckCircle2, Circle, ShoppingBasket } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Grocery.css';
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, ToggleLeft, ToggleRight, Check, AlertCircle, Edit, Tag, ChevronDown, ChevronUp, X } from 'lucide-react';
+import {  useState  } from 'react';
+import { Plus, Trash2, Check, AlertCircle, Edit, Tag, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Menu.css';
 
@@ -27,7 +27,6 @@ export default function Menu() {
   const [success, setSuccess] = useState('');
   const [editingItem, setEditingItem] = useState(null);
 
-  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [catError, setCatError] = useState('');
 
@@ -101,10 +100,6 @@ export default function Menu() {
   };
 
   const getPalette = (index) => CATEGORY_PALETTE[index % CATEGORY_PALETTE.length];
-  const getCatPalette = (catName) => {
-    const idx = foodCategories.findIndex(c => c.name === catName);
-    return getPalette(idx >= 0 ? idx : 0);
-  };
 
   return (
     <div className="menu-management-page">

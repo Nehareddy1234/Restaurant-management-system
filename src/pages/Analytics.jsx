@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import {  useState  } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { TrendingUp, DollarSign, ShoppingBag, Percent, Users, Award, TrendingDown, Clock, Utensils, Calendar, Sparkles } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingBag, Percent, Award, TrendingDown, Utensils, Calendar, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Analytics.css';
 
@@ -162,13 +162,6 @@ export default function Analytics() {
   const todayForecast = getForecastForDay(todayDayShort);
   const tomorrowForecast = getForecastForDay(tomorrowDayShort);
 
-  const getActualDate = (dateStr) => {
-    if (!dateStr || dateStr === 'Today') {
-      return getIstDateKey();
-    }
-    return dateStr;
-  };
-
   const getOrderDateKey = (order) => getIstDateKey(order.createdAt);
 
   const filteredHistory = dateFilter === 'All' 
@@ -211,15 +204,6 @@ export default function Analytics() {
     }
   });
   
-  let topCategory = 'N/A';
-  let topCategoryCount = 0;
-  Object.entries(categoryCounts).forEach(([cat, count]) => {
-    if (count > topCategoryCount) {
-      topCategory = cat;
-      topCategoryCount = count;
-    }
-  });
-
   // 2. Prepare Data: Item Performance (Top & Bottom)
   const itemPerformance = {};
   menuItems.forEach(m => {

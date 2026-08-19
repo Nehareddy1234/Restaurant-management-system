@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -67,7 +67,6 @@ export default function Sidebar() {
   const { currentUser, logout, hasAccess } = useAuth();
 
   const role = currentUser?.role || 'admin';
-  const isAdmin = role === 'admin';
 
   // Filter nav items by role access
   const restaurantNavItems = ALL_RESTAURANT_NAV.filter(item => hasAccess(item.path));

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -132,7 +132,7 @@ export default function Login() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 1rem auto', boxShadow: '0 8px 32px rgba(232,65,24,0.35)',
               fontSize: '1.8rem',
-            }}>🔑</div>
+            }}>??</div>
             <h1 style={{ color: '#fff', fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.25rem 0' }}>Verification</h1>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', margin: 0 }}>Verify mobile to complete signup</p>
           </div>
@@ -147,7 +147,7 @@ export default function Login() {
               color: '#2d3436', lineHeight: '1.4',
             }}>
               <div style={{ fontWeight: 700, color: '#00b894', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
-                <span>📨 SMS Simulator</span>
+                <span>?? SMS Simulator</span>
                 <span style={{ fontSize: '0.7rem', fontWeight: 500, background: 'rgba(0,184,148,0.15)', color: '#00b894', padding: '0.05rem 0.3rem', borderRadius: '4px' }}>Now</span>
               </div>
               Your OTP is <strong style={{ letterSpacing: '1px', color: '#e84118', fontSize: '0.95rem' }}>{generatedOtp}</strong>. Valid for 10 minutes.
@@ -176,7 +176,7 @@ export default function Login() {
               </button>
             </form>
           </div>
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System © 2026</p>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System � 2026</p>
         </div>
       </div>
     );
@@ -188,7 +188,7 @@ export default function Login() {
 
         {/* Brand */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'linear-gradient(135deg, #e84118, #c0392b)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', boxShadow: '0 8px 32px rgba(232,65,24,0.35)', fontSize: '1.8rem' }}>🍽️</div>
+          <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'linear-gradient(135deg, #e84118, #c0392b)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', boxShadow: '0 8px 32px rgba(232,65,24,0.35)', fontSize: '1.8rem' }}>???</div>
           <h1 style={{ color: '#fff', fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.25rem 0' }}>Restaurant Management System</h1>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', margin: 0 }}>Role-based restaurant operations</p>
         </div>
@@ -270,7 +270,7 @@ export default function Login() {
             </button>
           </div>
 
-          {/* Demo accounts — shown on Sign In only */}
+          {/* Demo accounts � shown on Sign In only */}
           {!isSignUp && (
             <section style={{ marginTop: '1.5rem' }} aria-label="Demo login accounts">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.65rem' }}>
@@ -297,7 +297,7 @@ export default function Login() {
           )}
         </div>
 
-        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System © 2026</p>
+        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System � 2026</p>
       </div>
     </div>
   );

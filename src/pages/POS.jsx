@@ -35,15 +35,12 @@ export default function POS() {
 
   const [isRearrangeMode, setIsRearrangeMode] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
-  const [localItems, setLocalItems] = useState([]);
+  const [reorderedItems, setReorderedItems] = useState([]);
 
-  useEffect(() => {
-    if (!draggedItemId) {
-      setLocalItems(menuItems);
-    }
-  }, [menuItems, draggedItemId]);
+  const effectiveItems = isRearrangeMode ? reorderedItems : menuItems;
 
   // Load existing order when editOrderId changes
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (editOrderId) {
       if (loadedOrderId !== editOrderId) {
@@ -62,7 +59,6 @@ export default function POS() {
               }
             });
           } else {
-            // Fallback for older orders that might only have itemList strings
             (order.itemList || []).forEach(itemStr => {
               const match = itemStr.match(/(.+) x(\d+)$/);
               if (match) {
@@ -96,10 +92,11 @@ export default function POS() {
       setCustomerName('');
       setLoadedOrderId(null);
     }
-  }, [editOrderId, activeOrders, menuItems, loadedOrderId]);
+  }, [editOrderId, activeOrders, menuItems, loadedOrderId, tables]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const availableTables = tables.filter(t => t.status === 'available' || (editOrderId && t.order?.id === editOrderId));
-  const enabledItems = localItems.filter(item => item.enabled);
+  const enabledItems = effectiveItems.filter(item => item.enabled);
 
   const filteredItems = enabledItems.filter(item => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -229,7 +226,12 @@ export default function POS() {
               <button 
                 className={`btn ${isRearrangeMode ? 'btn-primary' : 'btn-outline'}`}
                 style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px' }}
-                onClick={() => setIsRearrangeMode(!isRearrangeMode)}
+                onClick={() => {
+                  if (!isRearrangeMode) {
+                    setReorderedItems(menuItems);
+                  }
+                  setIsRearrangeMode(!isRearrangeMode);
+                }}
                 title="Toggle Rearrange Mode"
               >
                 <Move size={18} />
@@ -275,13 +277,13 @@ export default function POS() {
               onDragOver={(e) => {
                 e.preventDefault();
                 if (!isRearrangeMode || !draggedItemId || draggedItemId === item.id) return;
-                const draggedIndex = localItems.findIndex(i => i.id === draggedItemId);
-                const targetIndex = localItems.findIndex(i => i.id === item.id);
+                const draggedIndex = effectiveItems.findIndex(i => i.id === draggedItemId);
+                const targetIndex = effectiveItems.findIndex(i => i.id === item.id);
                 if (draggedIndex !== -1 && targetIndex !== -1) {
-                  const newItems = [...localItems];
+                  const newItems = [...effectiveItems];
                   const [removed] = newItems.splice(draggedIndex, 1);
                   newItems.splice(targetIndex, 0, removed);
-                  setLocalItems(newItems);
+                  setReorderedItems(newItems);
                 }
               }}
               onDrop={async (e) => {
@@ -289,7 +291,7 @@ export default function POS() {
                 e.preventDefault();
                 setDraggedItemId(null);
                 try {
-                  await reorderMenuItems(localItems);
+                  await reorderMenuItems(effectiveItems);
                 } catch (err) {
                   alert(`Failed to save new order: ${err.message}`);
                 }
