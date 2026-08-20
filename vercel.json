@@ -1,7 +1,6 @@
 {
   "buildCommand": "prisma generate && vite build",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "/api/index.js" }
   ]
 }
