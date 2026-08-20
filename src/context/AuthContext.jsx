@@ -110,45 +110,15 @@ export function AuthProvider({ children }) {
   const checkUsernameExists = async (uname) => {
     const trimmed = uname.trim().toLowerCase();
     
-    // 1. Check predefined in-memory demo accounts first
+    // 1. Check predefined in-memory demo accounts
     const existsInPredefined = USERS.some(u => u.username.toLowerCase() === trimmed);
-    if (existsInPredefined) return true;
-
-    // 2. Check Supabase database
-    try {
-      const res = await fetch(`${API_BASE}/api/users/check?username=${encodeURIComponent(trimmed)}`);
-      if (res.ok) {
-        const data = await res.json();
-        return !!data.exists;
-      }
-    } catch (e) {
-      console.error("Failed to check username availability from Supabase", e);
-    }
-    return false;
+    return existsInPredefined;
   };
 
   const login = async (username, password) => {
     const trimmedUsername = username.trim().toLowerCase();
 
-    // 1. Check Supabase database first for custom registered users
-    try {
-      const res = await fetch(`${API_BASE}/api/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: trimmedUsername, password })
-      });
-
-      if (res.ok) {
-        const safeUser = await res.json();
-        setCurrentUser(safeUser);
-        saveCurrentUser(safeUser);
-        return { success: true, user: safeUser };
-      }
-    } catch (e) {
-      console.error("Supabase login request failed, trying predefined demo...", e);
-    }
-
-    // 2. Fallback: check predefined in-memory demo users
+    // Check predefined in-memory demo users
     const demoUser = USERS.find(
       u => u.username.toLowerCase() === trimmedUsername && u.password === password
     );
@@ -170,34 +140,10 @@ export function AuthProvider({ children }) {
       return { success: false, error: 'Username and password are required.' };
     }
 
-    // 1. Register in Supabase database
-    try {
-      const res = await fetch(`${API_BASE}/api/users/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: trimmedUsername,
-          password,
-          displayName: displayName.trim() || trimmedUsername,
-          role: role || 'waiter',
-          phone: phone || '',
-          address: address || ''
-        })
-      });
+    // Demo Mode: Local registration is not persisted in memory in this version,
+    // so we just return an error since the backend is disconnected.
+    return { success: false, error: 'Registration is disabled in local demo mode. Please use predefined accounts.' };
 
-      if (res.ok) {
-        const safeUser = await res.json();
-        setCurrentUser(safeUser);
-        saveCurrentUser(safeUser);
-        return { success: true, user: safeUser };
-      } else {
-        const errBody = await res.json().catch(() => ({}));
-        return { success: false, error: errBody.error || `HTTP ${res.status}: Registration failed.` };
-      }
-    } catch (e) {
-      console.error("Supabase registration failed", e);
-      return { success: false, error: 'Failed to reach registration server. Please try again.' };
-    }
   };
 
   const logout = () => {
