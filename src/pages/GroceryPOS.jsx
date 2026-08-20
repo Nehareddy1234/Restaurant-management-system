@@ -52,7 +52,7 @@ function ProductCard({ item, onAdd }) {
         boxShadow: hovered ? '0 8px 20px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.04)',
       }}
     >
-      <img src={item.image || FALLBACK_FOOD_IMAGE} alt={item.name} className="grocery-product-image" onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_FOOD_IMAGE; }} />
+      <img src={item.image || FALLBACK_FOOD_IMAGE} alt={item.name} className="grocery-product-image" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'; }} />
       <div className="grocery-product-info">
         <h3 className="grocery-product-title">{item.name}</h3>
         <div className="grocery-product-footer">
@@ -215,7 +215,7 @@ export default function GroceryPOS() {
               <ul className="grocery-cart-list">
                 {cart.map(item => (
                   <li key={item.id} className="grocery-cart-item">
-                    <img src={item.image || FALLBACK_FOOD_IMAGE} alt={item.name} className="grocery-cart-item-image" onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_FOOD_IMAGE; }} />
+                    <img src={item.image || FALLBACK_FOOD_IMAGE} alt={item.name} className="grocery-cart-item-image" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'; }} />
                     <div className="grocery-cart-item-info">
                       <h4 className="grocery-cart-item-name">{item.name}</h4>
                       <span className="grocery-cart-item-price">₹{item.price}</span>

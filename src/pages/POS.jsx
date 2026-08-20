@@ -305,7 +305,7 @@ export default function POS() {
                   src={item.image && item.image.trim() ? item.image : FALLBACK_FOOD_IMAGE} 
                   alt={item.name} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
-                  onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_FOOD_IMAGE; }} 
+                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'; }}
                 />
                 {getCartQuantity(item.id) > 0 && (
                   <span className="menu-item-qty-badge" style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 2 }}>{getCartQuantity(item.id)}</span>
