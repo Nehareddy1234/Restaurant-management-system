@@ -1,4 +1,4 @@
-export const FALLBACK_FOOD_IMAGE = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200';
+export const FALLBACK_FOOD_IMAGE = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80';
 
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 
@@ -35,7 +35,7 @@ const initialMenuItems = [
   { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80' },
   { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80' },
   { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format&fit=crop&w=600&q=80' },
-  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80' },
+  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' },
   // Biryani
   { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 280, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80' },
   { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' },

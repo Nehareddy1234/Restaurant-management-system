@@ -84,7 +84,7 @@ export default function GroceryInventory() {
               {filteredInventory.map(item => (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0' }}>
-                    <img src={item.image || FALLBACK_FOOD_IMAGE} alt={item.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_FOOD_IMAGE; }} />
+                    <img src={item.image || FALLBACK_FOOD_IMAGE} alt={item.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'; }} />
                     <strong style={{ fontSize: '0.95rem' }}>{item.name}</strong>
                   </td>
                   <td className="text-muted">{item.barcode}</td>
