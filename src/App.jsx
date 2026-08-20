@@ -121,7 +121,7 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <Router>
+        <Router basename="/Restaurant-management-system/">
           <AppContent />
         </Router>
       </AppProvider>
