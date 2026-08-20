@@ -2,53 +2,59 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const getFoodImage = (name: string, category: string): string => {
-  const nameLower = (name || '').toLowerCase();
-  
-  if (nameLower.includes('samosa')) return 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('pakora')) return 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('uggani') || nameLower.includes('bajji')) return 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80';
-  
-  if (nameLower.includes('chicken biryani')) return 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('mutton biryani')) return 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('prawn biryani')) return 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('biryani')) return 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=600&q=80';
-  
-  if (nameLower.includes('chicken curry')) return 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('mutton curry')) return 'https://images.unsplash.com/photo-1545247181-516773cae76d?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('paneer')) return 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('chana') || nameLower.includes('masala')) return 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=600&q=80';
-  
-  if (nameLower.includes('naan')) return 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('roti')) return 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('paratha')) return 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=600&q=80';
-  
-  if (nameLower.includes('jeera rice')) return 'https://images.unsplash.com/photo-1536304997881-a372c179924b?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('rice')) return 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80';
-  
-  if (nameLower.includes('gulab jamun')) return 'https://images.unsplash.com/photo-1589135306090-e17c2442cde8?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('kheer')) return 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('jalebi')) return 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80';
-  
-  if (nameLower.includes('chai') || nameLower.includes('tea')) return 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('lassi')) return 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('mango')) return 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('buttermilk')) return 'https://images.unsplash.com/photo-1546272989-40c929af9c66?auto=format&fit=crop&w=600&q=80';
-  
-  if (nameLower.includes('combo')) return 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80';
-  if (nameLower.includes('feast')) return 'https://images.unsplash.com/photo-1618142134737-30460ec2c9ab?auto=format&fit=crop&w=600&q=80';
+// Direct lookup dictionary for permanent static Unsplash food image URLs.
+// These URLs are aligned with the frontend initialMenuItems in AppContext.jsx.
+const FOOD_IMAGE_MAP: Record<string, string> = {
+  // Appetizers
+  'Samosa (4 pcs)': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+  'Pakora Mix': 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?auto=format&fit=crop&w=600&q=80',
+  'Uggani Bajji': 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80',
+  // Main Course
+  'Chicken Curry': 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80',
+  'Mutton Curry': 'https://images.unsplash.com/photo-1545247181-516773cae76d?auto=format&fit=crop&w=600&q=80',
+  'Paneer Butter Masala': 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=600&q=80',
+  'Chana Masala': 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=600&q=80',
+  // Biryani
+  'Rayalaseema Chicken Biryani': 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80',
+  'Rayalaseema Mutton Biryani': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80',
+  'Vegetable Biryani': 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=600&q=80',
+  'Prawn Biryani': 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80',
+  // Bread
+  'Naan (2 pcs)': 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80',
+  'Jowar Roti (3 pcs)': 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80',
+  'Paratha (2 pcs)': 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=600&q=80',
+  // Rice
+  'Plain Rice': 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
+  'Jeera Rice': 'https://images.unsplash.com/photo-1536304997881-a372c179924b?auto=format&fit=crop&w=600&q=80',
+  // Desserts
+  'Gulab Jamun (4 pcs)': 'https://images.unsplash.com/photo-1589135306090-e17c2442cde8?auto=format&fit=crop&w=600&q=80',
+  'Kheer': 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+  'Jalebi': 'https://images.unsplash.com/photo-1567337710282-00832b415979?auto=format&fit=crop&w=600&q=80',
+  // Beverages
+  'Masala Chai': 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80',
+  'Lassi': 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80',
+  'Mango Juice': 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80',
+  'Buttermilk': 'https://images.unsplash.com/photo-1546272989-40c929af9c66?auto=format&fit=crop&w=600&q=80',
+  // Specials
+  'Curry Rice Combo': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80',
+  'Family Feast': 'https://images.unsplash.com/photo-1618142134737-30460ec2c9ab?auto=format&fit=crop&w=600&q=80',
+};
 
-  const menuImageByCategory: Record<string, string> = {
-    Appetizers: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
-    'Main Course': 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80',
-    Biryani: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80',
-    Bread: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80',
-    Rice: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
-    Desserts: 'https://images.unsplash.com/photo-1666190092159-3171cf470b53?auto=format&fit=crop&w=600&q=80',
-    Beverages: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=600&q=80',
-    Specials: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80',
-  };
-  return menuImageByCategory[category] || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80';
+const CATEGORY_FALLBACK_IMAGE: Record<string, string> = {
+  Appetizers: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+  'Main Course': 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80',
+  Biryani: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80',
+  Bread: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80',
+  Rice: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
+  Desserts: 'https://images.unsplash.com/photo-1589135306090-e17c2442cde8?auto=format&fit=crop&w=600&q=80',
+  Beverages: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80',
+  Specials: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80',
+};
+
+const DEFAULT_FOOD_IMAGE = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80';
+
+const getFoodImage = (name: string, category: string): string => {
+  return FOOD_IMAGE_MAP[name] || CATEGORY_FALLBACK_IMAGE[category] || DEFAULT_FOOD_IMAGE;
 };
 
 const storeImageByCategory: Record<string, string> = {

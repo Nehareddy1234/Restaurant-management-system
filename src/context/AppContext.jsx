@@ -29,37 +29,37 @@ const storeImageByCategory = {
 const initialMenuItems = [
   // Appetizers
   { id: 1, name: 'Samosa (4 pcs)', category: 'Appetizers', price: 80, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80' },
-  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 110, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1596450514735-111a2fe02935?auto=format&fit=crop&w=600&q=80' },
-  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80' },
+  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 110, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?auto=format&fit=crop&w=600&q=80' },
+  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80' },
   // Main Course
-  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80' },
-  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80' },
-  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format&fit=crop&w=600&q=80' },
-  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' },
+  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80' },
+  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1545247181-516773cae76d?auto=format&fit=crop&w=600&q=80' },
+  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=600&q=80' },
+  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=600&q=80' },
   // Biryani
   { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 280, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80' },
-  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80' },
-  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 220, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80' },
+  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80' },
+  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 220, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=600&q=80' },
   // Bread
   { id: 11, name: 'Naan (2 pcs)', category: 'Bread', price: 60, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80' },
-  { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=600&q=80' },
-  { id: 13, name: 'Paratha (2 pcs)', category: 'Bread', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80' },
+  { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80' },
+  { id: 13, name: 'Paratha (2 pcs)', category: 'Bread', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=600&q=80' },
   // Rice
   { id: 14, name: 'Plain Rice', category: 'Rice', price: 100, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80' },
-  { id: 15, name: 'Jeera Rice', category: 'Rice', price: 130, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80' },
+  { id: 15, name: 'Jeera Rice', category: 'Rice', price: 130, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1536304997881-a372c179924b?auto=format&fit=crop&w=600&q=80' },
   // Desserts
-  { id: 16, name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=600&q=80' },
-  { id: 17, name: 'Kheer', category: 'Desserts', price: 100, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80' },
-  { id: 18, name: 'Jalebi', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80' },
+  { id: 16, name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1589135306090-e17c2442cde8?auto=format&fit=crop&w=600&q=80' },
+  { id: 17, name: 'Kheer', category: 'Desserts', price: 100, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80' },
+  { id: 18, name: 'Jalebi', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1567337710282-00832b415979?auto=format&fit=crop&w=600&q=80' },
   // Beverages
-  { id: 19, name: 'Masala Chai', category: 'Beverages', price: 30, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=600&q=80' },
-  { id: 20, name: 'Lassi', category: 'Beverages', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80' },
-  { id: 21, name: 'Mango Juice', category: 'Beverages', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80' },
+  { id: 19, name: 'Masala Chai', category: 'Beverages', price: 30, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80' },
+  { id: 20, name: 'Lassi', category: 'Beverages', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80' },
+  { id: 21, name: 'Mango Juice', category: 'Beverages', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' },
   // Specials
-  { id: 22, name: 'Curry Rice Combo', category: 'Specials', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80' },
-  { id: 23, name: 'Family Feast', category: 'Specials', price: 1499, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?auto=format&fit=crop&w=600&q=80' },
-  { id: 24, name: 'Prawn Biryani', category: 'Biryani', price: 390, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80' },
-  { id: 25, name: 'Buttermilk', category: 'Beverages', price: 45, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=600&q=80' },
+  { id: 22, name: 'Curry Rice Combo', category: 'Specials', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80' },
+  { id: 23, name: 'Family Feast', category: 'Specials', price: 1499, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1618142134737-30460ec2c9ab?auto=format&fit=crop&w=600&q=80' },
+  { id: 24, name: 'Prawn Biryani', category: 'Biryani', price: 390, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80' },
+  { id: 25, name: 'Buttermilk', category: 'Beverages', price: 45, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1546272989-40c929af9c66?auto=format&fit=crop&w=600&q=80' },
 ];
 
 const initialFoodCategories = [
