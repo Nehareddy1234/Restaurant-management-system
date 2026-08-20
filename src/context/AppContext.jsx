@@ -274,7 +274,17 @@ export function AppProvider({ children }) {
       if (error) errors[key] = error;
     });
     setDataErrors(errors);
-    if (responses.menu) setMenuItems(responses.menu);
+    if (responses.menu) {
+      // Ensure every item fetched from the API has a valid image URL.
+      // The backend may store items without images, so we fall back to the
+      // hardcoded initialMenuItems images (matched by id) or FALLBACK_FOOD_IMAGE.
+      const mergedMenu = responses.menu.map(item => {
+        const fallback = initialMenuItems.find(m => m.id === item.id);
+        const image = (item.image && item.image.trim()) || (fallback?.image) || FALLBACK_FOOD_IMAGE;
+        return { ...item, image };
+      });
+      setMenuItems(mergedMenu);
+    }
     if (responses.tables) setTables(responses.tables);
     // Orders data is large; skip auto‑load unless explicitly requested
     if (autoRefreshEnabled && responses.orders) {
