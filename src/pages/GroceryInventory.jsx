@@ -1,6 +1,6 @@
 import {  useState  } from 'react';
 import { Plus, Search, PackagePlus } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp, FALLBACK_FOOD_IMAGE } from '../context/AppContext';
 import './Menu.css'; // Reusing Menu CSS for layout consistency
 
 export default function GroceryInventory() {
@@ -84,7 +84,7 @@ export default function GroceryInventory() {
               {filteredInventory.map(item => (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0' }}>
-                    <img src={item.image} alt={item.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                    <img src={item.image || FALLBACK_FOOD_IMAGE} alt={item.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_FOOD_IMAGE; }} />
                     <strong style={{ fontSize: '0.95rem' }}>{item.name}</strong>
                   </td>
                   <td className="text-muted">{item.barcode}</td>

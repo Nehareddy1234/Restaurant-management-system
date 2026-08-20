@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Minus, Trash2, ShoppingCart, Package, Move } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp, FALLBACK_FOOD_IMAGE } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import './POS.css';
 
@@ -300,14 +300,15 @@ export default function POS() {
                 setDraggedItemId(null);
               }}
             >
-              <div
-                className="menu-card-image"
-                style={{
-                  backgroundImage: `url(${item.image && item.image.trim() ? item.image : 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=200&h=200'})`
-                }}
-              >
+              <div className="menu-card-image" style={{ position: 'relative', padding: 0, overflow: 'hidden' }}>
+                <img 
+                  src={item.image && item.image.trim() ? item.image : FALLBACK_FOOD_IMAGE} 
+                  alt={item.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
+                  onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_FOOD_IMAGE; }} 
+                />
                 {getCartQuantity(item.id) > 0 && (
-                  <span className="menu-item-qty-badge">{getCartQuantity(item.id)}</span>
+                  <span className="menu-item-qty-badge" style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 2 }}>{getCartQuantity(item.id)}</span>
                 )}
               </div>
               <div className="menu-card-content">

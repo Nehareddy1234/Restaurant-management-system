@@ -176,7 +176,7 @@ export default function Login() {
               </button>
             </form>
           </div>
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System © 2026</p>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System Â© 2026</p>
         </div>
       </div>
     );
@@ -270,7 +270,7 @@ export default function Login() {
             </button>
           </div>
 
-          {/* Demo accounts — shown on Sign In only */}
+          {/* Demo accounts Â— shown on Sign In only */}
           {!isSignUp && (
             <section style={{ marginTop: '1.5rem' }} aria-label="Demo login accounts">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.65rem' }}>
@@ -297,7 +297,7 @@ export default function Login() {
           )}
         </div>
 
-        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System © 2026</p>
+        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', marginTop: '1.5rem' }}>Restaurant Management System Â© 2026</p>
       </div>
     </div>
   );
