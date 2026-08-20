@@ -232,97 +232,14 @@ export function AppProvider({ children }) {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const loadBackendData = async () => {
-    const endpoints = [
-        ['menu', `${API_BASE}/api/menu`],
-        ['tables', `${API_BASE}/api/tables`],
-        // Orders are fetched lazily via loadOrders()
-        ['grocery', `${API_BASE}/api/grocery`],
-        ['categories', `${API_BASE}/api/menu-categories`],
-        ['storeInventory', `${API_BASE}/api/store-products`],
-        ['storeOrders', `${API_BASE}/api/store-orders`],
-        ['supplierOrders', `${API_BASE}/api/supplier-orders`],
-      ];
-    
-    // Simple in-memory + localStorage caching (60 s TTL)
-    const fetchPromises = endpoints.map(async ([key, endpoint]) => {
-      try {
-        const cacheKey = `cache_${key}`;
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { data, ts } = JSON.parse(cached);
-          if (Date.now() - ts < 60000) {
-            return { key, data, error: null };
-          }
-        }
-        const res = await fetch(endpoint);
-        if (res && res.ok) {
-          const data = await res.json();
-          localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
-          return { key, data, error: null };
-        }
-        const err = await res?.json?.().catch(() => ({}));
-        return { key, data: null, error: err?.details || err?.error || `Failed to load ${key}` };
-      } catch (err) {
-        return { key, data: null, error: err.message || `Failed to load ${key}` };
-      }
-    });
-    const results = await Promise.all(fetchPromises);
-    const responses = {};
-    const errors = {};
-    results.forEach(({ key, data, error }) => {
-      responses[key] = data;
-      if (error) errors[key] = error;
-    });
-    setDataErrors(errors);
-    if (responses.menu) {
-      // Ensure every item fetched from the API has a valid image URL.
-      // The backend may store items without images, so we fall back to the
-      // hardcoded initialMenuItems images (matched by id) or FALLBACK_FOOD_IMAGE.
-      const mergedMenu = responses.menu.map(item => {
-        const fallback = initialMenuItems.find(m => m.id === item.id);
-        const image = (item.image && item.image.trim()) || (fallback?.image) || FALLBACK_FOOD_IMAGE;
-        return { ...item, image };
-      });
-      setMenuItems(mergedMenu);
-    }
-    if (responses.tables) setTables(responses.tables);
-    // Orders data is large; skip auto‑load unless explicitly requested
-    if (autoRefreshEnabled && responses.orders) {
-      const allOrders = responses.orders;
-      const backendActiveOrders = allOrders.filter(o =>
-        !isClosedOrder(o) && !pendingClosedOrderIdsRef.current.has(o.id)
-      );
-      setActiveOrders(prev =>
-        mergeLocalActiveOrders(prev, backendActiveOrders)
-          .filter(order => !pendingClosedOrderIdsRef.current.has(order.id))
-      );
-      setOrderHistory(allOrders.filter(isClosedOrder));
-    }
-    if (responses.grocery) setGroceryItems(responses.grocery);
-    if (responses.categories) setFoodCategories(responses.categories);
-    if (responses.storeInventory) setStoreInventory(responses.storeInventory);
-    if (responses.storeOrders) setStoreOrders(responses.storeOrders);
-    if (responses.supplierOrders) setSupplierOrders(responses.supplierOrders);
+    // Demo mode: Disable backend fetching
+    return;
   };
 
   // Lazy-load orders separately to avoid heavy initial payload
   const loadOrders = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/orders`);
-      if (res && res.ok) {
-        const data = await res.json();
-        const backendActiveOrders = data.filter(o =>
-          !isClosedOrder(o) && !pendingClosedOrderIdsRef.current.has(o.id)
-        );
-        setActiveOrders(prev =>
-          mergeLocalActiveOrders(prev, backendActiveOrders)
-            .filter(order => !pendingClosedOrderIdsRef.current.has(order.id))
-        );
-        setOrderHistory(data.filter(isClosedOrder));
-      }
-    } catch (e) {
-      console.error('Failed to load orders', e);
-    }
+    // Demo mode: Disable backend fetching
+    return;
   };
 
   // Fetch initial data from backend (fallback to defaults if backend not ready)
@@ -343,18 +260,7 @@ export function AppProvider({ children }) {
   // Auto-refresh interval - respects autoRefreshEnabled flag
 
   // Refresh all data from the backend
-  const refreshData = async () => {
-    if (isRefreshingRef.current) return;
-    isRefreshingRef.current = true;
-
-    try {
-      await loadBackendData();
-    } catch (err) {
-      console.error('Refresh failed', err);
-    } finally {
-      isRefreshingRef.current = false;
-    }
-  };
+  const refreshData = async () => {};
 
   useEffect(() => {
     if (!autoRefreshEnabled) return undefined;
