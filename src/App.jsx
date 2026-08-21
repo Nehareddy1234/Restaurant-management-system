@@ -121,7 +121,7 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <Router basename="/Restaurant-management-system/">
+        <Router basename={import.meta.env.BASE_URL}>
           <AppContent />
         </Router>
       </AppProvider>
