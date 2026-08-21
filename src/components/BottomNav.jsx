@@ -79,7 +79,7 @@ export default function BottomNav() {
       {/* ── Brand + user bar ── */}
       <div className="pill-nav-brand">
         <div className="pill-nav-brand-left">
-          <div className="pill-nav-logo">NK</div>
+          <div className="pill-nav-logo">RMS</div>
           <span className="pill-nav-title">Restaurant Management System</span>
         </div>
 

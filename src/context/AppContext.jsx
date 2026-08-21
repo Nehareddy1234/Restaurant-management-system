@@ -30,38 +30,38 @@ const storeImageByCategory = {
 // Demo data for showcasing without backend
 const initialMenuItems = [
   // Appetizers
-  { id: 1, name: 'Samosa (4 pcs)', category: 'Appetizers', price: 80, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80' },
-  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 110, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1596450514735-111a2fe02935?auto=format&fit=crop&w=600&q=80' },
-  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1626079986343-41bbd6a2f323?auto=format&fit=crop&w=600&q=80' },
+  { id: 1, name: 'Samosa (4 pcs)', category: 'Appetizers', price: 80, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/indian-samosa-13580921.jpg?w=768' },
+  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 110, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/indian-favourite-street-fried-food-pakora-also-know-as-pakoda-bhajiya-kanda-bhaji-pyaz-pakoda-fried-chillies-fried-onion-indian-205191576.jpg?w=768' },
+  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://thumbs.dreamstime.com/b/closeup-south-indian-breakfast-puffed-rice-upma-its-has-many-names-called-uggani-vaggani-borugulu-buggani-borugula-upma-157590575.jpg?w=768' },
   // Main Course
-  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80' },
-  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80' },
-  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc0?auto=format&fit=crop&w=600&q=80' },
-  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80' },
+  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/chicken-curry-29197236.jpg?w=768' },
+  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/mutton-curry-indian-style-11521250.jpg?w=768' },
+  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://thumbs.dreamstime.com/b/indian-meal-punjabi-paneer-butter-masala-roti-indian-main-course-lunch-dinner-paneer-butter-masala-curry-roti-indian-109156151.jpg?w=768' },
+  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://thumbs.dreamstime.com/b/channa-masala-indian-dish-prepared-chickpeas-47871577.jpg?w=768' },
   // Biryani
-  { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 280, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80' },
-  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1589302168068-944d15260c66?auto=format&fit=crop&w=600&q=80' },
-  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 220, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1630409351052-eb02fbef802e?auto=format&fit=crop&w=600&q=80' },
+  { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 280, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/chicken-biryani-19027920.jpg?w=768' },
+  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/mutton-biryani-19018243.jpg?w=768' },
+  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 220, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://thumbs.dreamstime.com/b/vegetable-biryani-17694437.jpg?w=768' },
   // Bread
-  { id: 11, name: 'Naan (2 pcs)', category: 'Bread', price: 60, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80' },
-  { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1599321955726-e04842669811?auto=format&fit=crop&w=600&q=80' },
-  { id: 13, name: 'Paratha (2 pcs)', category: 'Bread', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80' },
+  { id: 11, name: 'Naan (2 pcs)', category: 'Bread', price: 60, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/tanoori-naan-plate-17512636.jpg?w=768' },
+  { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/flat-bread-made-sorghum-flour-39938807.jpg?w=768' },
+  { id: 13, name: 'Paratha (2 pcs)', category: 'Bread', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://thumbs.dreamstime.com/b/indian-paratha-multi-layered-flat-bread-36118722.jpg?w=768' },
   // Rice
-  { id: 14, name: 'Plain Rice', category: 'Rice', price: 100, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80' },
-  { id: 15, name: 'Jeera Rice', category: 'Rice', price: 130, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80' },
+  { id: 14, name: 'Plain Rice', category: 'Rice', price: 100, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/rice-bowl-isolated-white-background-55359436.jpg?w=768' },
+  { id: 15, name: 'Jeera Rice', category: 'Rice', price: 130, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/jeera-rice-long-grain-basmati-flavoured-fried-cumin-seeds-beaten-copper-steel-serving-bowl-34444475.jpg?w=992' },
   // Desserts
-  { id: 16, name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1666190092159-3171cf470b53?auto=format&fit=crop&w=600&q=80' },
-  { id: 17, name: 'Kheer', category: 'Desserts', price: 100, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1580226456012-70b92eb1db59?auto=format&fit=crop&w=600&q=80' },
-  { id: 18, name: 'Jalebi', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1615486511484-91a7f0bebfcc?auto=format&fit=crop&w=600&q=80' },
+  { id: 16, name: 'Gulab Jamun (4 pcs)', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/indian-dessert-gulab-jamun-28400036.jpg?w=768' },
+  { id: 17, name: 'Kheer', category: 'Desserts', price: 100, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/indian-desert-kheer-22421541.jpg?w=768' },
+  { id: 18, name: 'Jalebi', category: 'Desserts', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://thumbs.dreamstime.com/b/indian-jalebi-plate-5092277.jpg?w=768' },
   // Beverages
-  { id: 19, name: 'Masala Chai', category: 'Beverages', price: 30, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=600&q=80' },
-  { id: 20, name: 'Lassi', category: 'Beverages', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1625860533264-9df920f5c09e?auto=format&fit=crop&w=600&q=80' },
-  { id: 21, name: 'Mango Juice', category: 'Beverages', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80' },
+  { id: 19, name: 'Masala Chai', category: 'Beverages', price: 30, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/indian-masala-chai-tea-spiced-tea-milk-rustic-wooden-table-63636590.jpg?w=768' },
+  { id: 20, name: 'Lassi', category: 'Beverages', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/traditional-mild-salted-lassi-26587492.jpg?w=768' },
+  { id: 21, name: 'Mango Juice', category: 'Beverages', price: 80, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://thumbs.dreamstime.com/b/mango-juice-14422970.jpg?w=768' },
   // Specials
-  { id: 22, name: 'Curry Rice Combo', category: 'Specials', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80' },
-  { id: 23, name: 'Family Feast', category: 'Specials', price: 1499, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?auto=format&fit=crop&w=600&q=80' },
-  { id: 24, name: 'Prawn Biryani', category: 'Biryani', price: 390, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80' },
-  { id: 25, name: 'Buttermilk', category: 'Beverages', price: 45, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1601050690082-a3843f548079?auto=format&fit=crop&w=600&q=80' },
+  { id: 22, name: 'Curry Rice Combo', category: 'Specials', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://thumbs.dreamstime.com/b/butter-dal-jeera-rice-combo-takeaway-makhani-creamy-rich-easy-to-make-flavorful-lentil-dish-made-using-whole-black-195902344.jpg?w=768' },
+  { id: 23, name: 'Family Feast', category: 'Specials', price: 1499, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://thumbs.dreamstime.com/b/thanksgiving-dinner-roasted-turkey-garnished-cranberries-rustic-style-table-decoraded-pumpkins-vegetables-pie-127581137.jpg?w=768' },
+  { id: 24, name: 'Prawn Biryani', category: 'Biryani', price: 390, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://thumbs.dreamstime.com/b/prawn-biryani-indian-jinga-36297289.jpg?w=768' },
+  { id: 25, name: 'Buttermilk', category: 'Beverages', price: 45, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://thumbs.dreamstime.com/b/fresh-buttermilk-28603169.jpg?w=768' },
 ];
 
 const initialFoodCategories = [
@@ -262,7 +262,7 @@ export function AppProvider({ children }) {
   // Auto-refresh interval - respects autoRefreshEnabled flag
 
   // Refresh all data from the backend
-  const refreshData = async () => {};
+  const refreshData = async () => { };
 
   useEffect(() => {
     if (!autoRefreshEnabled) return undefined;
@@ -573,26 +573,26 @@ export function AppProvider({ children }) {
   };
 
   const logOldSettlement = async (customerName, amount, paymentMethod, extraData = {}) => {
-  const res = await fetch(`${API_BASE}/api/orders/old-settlement`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      customerName,
-      amount,
-      paymentMethod,
-      ...extraData,
-    }),
-  });
+    const res = await fetch(`${API_BASE}/api/orders/old-settlement`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName,
+        amount,
+        paymentMethod,
+        ...extraData,
+      }),
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.details || err.error || `Failed to log settlement (${res.status})`);
-  }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.details || err.error || `Failed to log settlement (${res.status})`);
+    }
 
-  const createdOrder = await res.json();
-  setOrderHistory(prev => [createdOrder, ...prev]);
-  return createdOrder;
-};
+    const createdOrder = await res.json();
+    setOrderHistory(prev => [createdOrder, ...prev]);
+    return createdOrder;
+  };
   const freeTable = (tableId) => {
     const table = tables.find(t => t.id === tableId);
     if (table?.order) closeOrder(table.order.id);
@@ -730,7 +730,7 @@ export function AppProvider({ children }) {
   const reorderMenuItems = async (reorderedItems) => {
     // Optimistically update the UI
     setMenuItems(reorderedItems);
-    
+
     // Prepare payload
     const payload = reorderedItems.map((item, index) => ({
       id: item.id,
@@ -863,7 +863,7 @@ export function AppProvider({ children }) {
       });
     } catch (e) { console.error('Failed to update stock', e); }
   };
-  
+
   const checkoutStoreOrder = async (cartItems, paymentMethod = 'Cash') => {
     const now = new Date();
     const tempId = `GRO-${Date.now()}`;
@@ -921,7 +921,7 @@ export function AppProvider({ children }) {
       })),
       totalAmount: cartItems.reduce((sum, item) => sum + (item.buyingCost || 0) * item.quantity, 0)
     };
-    
+
     setSupplierOrders(prev => [order, ...prev]);
 
     try {
@@ -939,7 +939,7 @@ export function AppProvider({ children }) {
 
   const updateSupplierOrder = async (orderId, updates) => {
     setSupplierOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
-    
+
     if (updates.status === 'Received') {
       const order = supplierOrders.find(o => o.id === orderId);
       if (order) {
