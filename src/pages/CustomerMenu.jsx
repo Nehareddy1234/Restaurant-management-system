@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ShoppingCart, Search, Minus, Plus, Trash2, Banknote, CreditCard, SmartphoneNfc, CheckCircle2, LogOut } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp, FALLBACK_FOOD_IMAGE } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import './CustomerMenu.css';
 
 export default function CustomerMenu() {
-  const { placeOrder, foodCategories } = useApp();
+  const { placeOrder, foodCategories, menuItems } = useApp();
   const { currentUser, logout } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,6 +17,7 @@ export default function CustomerMenu() {
   const [orderId, setOrderId] = useState('');
   const [activeTab, setActiveTab] = useState('menu'); // 'menu' or 'cart' on mobile viewports
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('All');
 
   const categories = ['All', ...(foodCategories || []).map(c => c.name)];
 
@@ -30,6 +31,21 @@ export default function CustomerMenu() {
 
   const cartTotal = cart.reduce((sum, c) => sum + c.price * c.qty, 0);
   const cartCount = cart.reduce((sum, c) => sum + c.qty, 0);
+  const visibleMenuItems = (menuItems || []).filter(item =>
+    item.enabled !== false &&
+    item.availableOnline !== false &&
+    (activeCategory === 'All' || item.category === activeCategory) &&
+    item.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
+  const addToCart = (item) => {
+    setCart(prev => {
+      const existing = prev.find(cartItem => cartItem.id === item.id);
+      return existing
+        ? prev.map(cartItem => cartItem.id === item.id ? { ...cartItem, qty: cartItem.qty + 1 } : cartItem)
+        : [...prev, { ...item, qty: 1 }];
+    });
+  };
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0 || isSubmitting) return;
@@ -157,22 +173,44 @@ export default function CustomerMenu() {
             {categories.map(cat => (
                 <button
                   key={cat}
-                  onClick={() => setOrderType(cat)}
-                  className={`customer-cart-type-btn ${orderType === cat ? 'active' : ''}`}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`customer-category-tab ${activeCategory === cat ? 'active' : ''}`}
                 >{cat}</button>
               ))}
-            {orderType === 'Dine-In' && (
-              <input
-                type="text"
-                value={tableNo}
-                onChange={e => setTableNo(e.target.value)}
-                placeholder="Table number / name"
-                className="customer-cart-table-input"
-              />
-            )}
           </div>
 
-          {/* Cart Items */}
+          <div className="customer-grid-scroll">
+            <div className="customer-grid">
+              {visibleMenuItems.map(item => (
+                <article key={item.id} className="customer-dish-card">
+                  <img
+                    className="customer-dish-image"
+                    src={item.image || FALLBACK_FOOD_IMAGE}
+                    alt={item.name}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_FOOD_IMAGE; }}
+                  />
+                  <div className="customer-dish-info">
+                    <h2 className="customer-dish-name">{item.name}</h2>
+                    <span className="customer-dish-category">{item.category}</span>
+                    <div className="customer-dish-footer">
+                      <span className="customer-dish-price">₹{item.price}</span>
+                      <button className="customer-dish-add-btn" onClick={() => addToCart(item)} aria-label={`Add ${item.name} to cart`}><Plus size={16} /></button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <aside className="customer-cart-panel">
+          <div className="customer-cart-header"><ShoppingCart size={20} /><h2 className="customer-cart-title">Current Order</h2></div>
+          <div className="customer-cart-type-selector">
+            <div className="customer-cart-type-buttons">
+              {['Dine-In', 'Takeaway'].map(type => <button key={type} onClick={() => setOrderType(type)} className={`customer-cart-type-btn ${orderType === type ? 'active' : ''}`}>{type}</button>)}
+            </div>
+            {orderType === 'Dine-In' && <input type="text" value={tableNo} onChange={e => setTableNo(e.target.value)} placeholder="Table number / name" className="customer-cart-table-input" />}
+          </div>
           <div className="customer-cart-items">
             {cart.length === 0 ? (
               <div className="customer-cart-empty">
@@ -231,7 +269,7 @@ export default function CustomerMenu() {
               {isSubmitting ? 'Saving...' : 'Place Order'}
             </button>
           </div>
-        </div>
+        </aside>
       </div>
 
       {/* Floating Checkout Button (Mobile Menu Tab Only) */}

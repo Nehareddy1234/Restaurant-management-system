@@ -1,6 +1,8 @@
-export const FALLBACK_FOOD_IMAGE = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80';
-
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import fallbackFoodImage from '../assets/hero.png';
+
+// Bundled fallback keeps menu cards visible even when a remotely hosted photo is unavailable.
+export const FALLBACK_FOOD_IMAGE = fallbackFoodImage;
 
 const AppContext = createContext(null);
 
@@ -29,17 +31,17 @@ const storeImageByCategory = {
 const initialMenuItems = [
   // Appetizers
   { id: 1, name: 'Samosa (4 pcs)', category: 'Appetizers', price: 80, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80' },
-  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 110, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?auto=format&fit=crop&w=600&q=80' },
-  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80' },
+  { id: 2, name: 'Pakora Mix', category: 'Appetizers', price: 110, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1596450514735-111a2fe02935?auto=format&fit=crop&w=600&q=80' },
+  { id: 3, name: 'Uggani Bajji', category: 'Appetizers', price: 90, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1626079986343-41bbd6a2f323?auto=format&fit=crop&w=600&q=80' },
   // Main Course
-  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80' },
-  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1545247181-516773cae76d?auto=format&fit=crop&w=600&q=80' },
-  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=600&q=80' },
-  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=600&q=80' },
+  { id: 4, name: 'Chicken Curry', category: 'Main Course', price: 260, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80' },
+  { id: 5, name: 'Mutton Curry', category: 'Main Course', price: 340, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80' },
+  { id: 6, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc0?auto=format&fit=crop&w=600&q=80' },
+  { id: 7, name: 'Chana Masala', category: 'Main Course', price: 180, enabled: true, availableOnline: true, orderIndex: 4, image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80' },
   // Biryani
   { id: 8, name: 'Rayalaseema Chicken Biryani', category: 'Biryani', price: 280, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=600&q=80' },
-  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80' },
-  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 220, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=600&q=80' },
+  { id: 9, name: 'Rayalaseema Mutton Biryani', category: 'Biryani', price: 360, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1589302168068-944d15260c66?auto=format&fit=crop&w=600&q=80' },
+  { id: 10, name: 'Vegetable Biryani', category: 'Biryani', price: 220, enabled: true, availableOnline: true, orderIndex: 3, image: 'https://images.unsplash.com/photo-1630409351052-eb02fbef802e?auto=format&fit=crop&w=600&q=80' },
   // Bread
   { id: 11, name: 'Naan (2 pcs)', category: 'Bread', price: 60, enabled: true, availableOnline: true, orderIndex: 1, image: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80' },
   { id: 12, name: 'Jowar Roti (3 pcs)', category: 'Bread', price: 70, enabled: true, availableOnline: true, orderIndex: 2, image: 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80' },
