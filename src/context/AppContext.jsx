@@ -76,16 +76,16 @@ const initialFoodCategories = [
 ];
 
 const initialGroceryItems = [
-  { id: 1, name: 'Rice (20kg)', quantity: 50, unit: 'kg', purchased: true },
-  { id: 2, name: 'Flour (20kg)', quantity: 30, unit: 'kg', purchased: true },
-  { id: 3, name: 'Chicken', quantity: 100, unit: 'kg', purchased: true },
-  { id: 4, name: 'Mutton', quantity: 50, unit: 'kg', purchased: false },
-  { id: 5, name: 'Paneer', quantity: 20, unit: 'kg', purchased: true },
-  { id: 6, name: 'Onions', quantity: 100, unit: 'kg', purchased: true },
-  { id: 7, name: 'Tomatoes', quantity: 80, unit: 'kg', purchased: true },
-  { id: 8, name: 'Garlic', quantity: 10, unit: 'kg', purchased: true },
-  { id: 9, name: 'Ginger', quantity: 5, unit: 'kg', purchased: true },
-  { id: 10, name: 'Spices Mix', quantity: 50, unit: 'packets', purchased: true },
+  { id: 1, name: 'Rice (20kg)', quantity: 50, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1586208958839-06c17cacdf08?auto=format&fit=crop&w=600&q=80' },
+  { id: 2, name: 'Flour (20kg)', quantity: 30, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80' },
+  { id: 3, name: 'Chicken', quantity: 100, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=600&q=80' },
+  { id: 4, name: 'Mutton', quantity: 50, unit: 'kg', purchased: false, image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=600&q=80' },
+  { id: 5, name: 'Paneer', quantity: 20, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=600&q=80' },
+  { id: 6, name: 'Onions', quantity: 100, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=600&q=80' },
+  { id: 7, name: 'Tomatoes', quantity: 80, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80' },
+  { id: 8, name: 'Garlic', quantity: 10, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1620601974154-8c8808605332?auto=format&fit=crop&w=600&q=80' },
+  { id: 9, name: 'Ginger', quantity: 5, unit: 'kg', purchased: true, image: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=600&q=80' },
+  { id: 10, name: 'Spices Mix', quantity: 50, unit: 'packets', purchased: true, image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80' },
 ];
 
 const initialStoreInventory = [
