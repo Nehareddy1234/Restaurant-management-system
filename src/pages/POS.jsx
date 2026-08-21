@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Plus, Minus, Trash2, ShoppingCart, Package, Move } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp, FALLBACK_FOOD_IMAGE } from '../context/AppContext';
@@ -24,6 +24,24 @@ export default function POS() {
 
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Focus on search input when "/" or "Ctrl+K" / "Cmd+K" is pressed
+      if (e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key === 'k')) {
+        // Only prevent default if we're not already in an input that uses those keys
+        if (document.activeElement !== searchInputRef.current &&
+            !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   const [cart, setCart] = useState([]);
   const [selectedTable, setSelectedTable] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -32,6 +50,8 @@ export default function POS() {
   const [activeTab, setActiveTab] = useState('menu');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [parcelCharge, setParcelCharge] = useState('');
+  const [taxRate] = useState(0.05); // Fixed tax rate for now
+  const [discount] = useState(0); // Fixed discount for now
 
   const [isRearrangeMode, setIsRearrangeMode] = useState(false);
   const [draggedItemId, setDraggedItemId] = useState(null);
@@ -96,7 +116,8 @@ export default function POS() {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const availableTables = tables.filter(t => t.status === 'available' || (editOrderId && t.order?.id === editOrderId));
-  const enabledItems = effectiveItems.filter(item => item.enabled);
+  // Show all items, but those disabled are 'Sold Out'
+  const enabledItems = effectiveItems;
 
   const filteredItems = enabledItems.filter(item => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -141,10 +162,15 @@ export default function POS() {
 
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
 
+  const updateItemNote = (id, note) => {
+    setCart(prev => prev.map(i => i.id === id ? { ...i, note } : i));
+  };
+
   const getAddOnTotal = (item) => ((item.addOns?.Roti || 0) * 15);
   const subtotal = cart.reduce((sum, item) => sum + (item.price + getAddOnTotal(item)) * item.quantity, 0);
   const parsedParcelCharge = Number(parcelCharge) || 0;
-  const total = subtotal + parsedParcelCharge;
+  const taxAmount = subtotal * taxRate;
+  const total = subtotal + taxAmount - discount + parsedParcelCharge;
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0 || isSubmitting) return;
@@ -178,6 +204,24 @@ export default function POS() {
     setSearchParams({});
     setActiveTab('menu');
     setIsSubmitting(false);
+  };
+
+  const handleClearOrder = () => {
+    if (window.confirm('Are you sure you want to clear the current order?')) {
+      setCart([]);
+      setParcelCharge('');
+      setCustomerName('');
+      setSelectedTable('');
+    }
+  };
+
+  const handleHoldOrder = () => {
+    if (cart.length === 0) return;
+    alert('Order put on hold (this is a placeholder for future functionality).');
+    setCart([]);
+    setParcelCharge('');
+    setCustomerName('');
+    setSelectedTable('');
   };
 
   const handleCancelEdit = () => {
@@ -241,8 +285,9 @@ export default function POS() {
             <div className="search-bar">
             <Search size={20} className="text-muted" />
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search menu..."
+              placeholder="Search menu... (/ or Ctrl+K)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -267,7 +312,7 @@ export default function POS() {
             <div 
               key={item.id} 
               className={`menu-card card ${draggedItemId === item.id ? 'dragging' : ''} ${isRearrangeMode ? 'rearrange-mode' : ''}`}
-              onClick={() => !isRearrangeMode && addToCart(item)}
+              onClick={() => !isRearrangeMode && item.enabled && addToCart(item)}
               draggable={isRearrangeMode}
               onDragStart={(e) => {
                 if (!isRearrangeMode) return;
@@ -300,13 +345,16 @@ export default function POS() {
                 setDraggedItemId(null);
               }}
             >
-              <div className="menu-card-image" style={{ position: 'relative', padding: 0, overflow: 'hidden' }}>
+              <div className="menu-card-image" style={{ position: 'relative', padding: 0, overflow: 'hidden', opacity: item.enabled ? 1 : 0.6 }}>
                 <img 
                   src={item.image && item.image.trim() ? item.image : FALLBACK_FOOD_IMAGE} 
                   alt={item.name} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
-                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80'; }}
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_FOOD_IMAGE; }}
                 />
+                {!item.enabled && (
+                  <span className="menu-item-sold-out-badge">Sold Out</span>
+                )}
                 {getCartQuantity(item.id) > 0 && (
                   <span className="menu-item-qty-badge" style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 2 }}>{getCartQuantity(item.id)}</span>
                 )}
@@ -316,12 +364,16 @@ export default function POS() {
                 <div className="menu-card-footer">
                   <span className="price">₹{item.price}</span>
                   {!isRearrangeMode && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); addToCart(item); }}
-                      className="add-btn"
-                    >
-                      <Plus size={16} />
-                    </button>
+                    item.enabled ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); addToCart(item); }}
+                        className="add-btn"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    ) : (
+                      <span className="sold-out-text">Sold Out</span>
+                    )
                   )}
                 </div>
               </div>
@@ -385,6 +437,13 @@ export default function POS() {
                       <span className="cart-item-price" style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.85rem' }}>
                         ₹{itemTotalPrice.toFixed(0)}
                       </span>
+                      <input
+                        type="text"
+                        placeholder="Add note (e.g., Extra Spicy)"
+                        value={item.note || ''}
+                        onChange={(e) => updateItemNote(item.id, e.target.value)}
+                        className="item-note-input"
+                      />
                     </div>
                     <div className="cart-item-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); updateQuantity(item.id, -1); }} className="qty-btn"><Minus size={12} /></button>
@@ -425,25 +484,47 @@ export default function POS() {
               onChange={(e) => setParcelCharge(e.target.value)}
             />
           </div>
+          <div className="summary-row tax"><span>Tax ({(taxRate * 100).toFixed(0)}%)</span><span>₹{taxAmount.toFixed(0)}</span></div>
+          {discount > 0 && <div className="summary-row discount"><span>Discount</span><span>-₹{discount.toFixed(0)}</span></div>}
           <div className="summary-row total"><span>Total</span><span>₹{total.toFixed(0)}</span></div>
-          <div style={{ display: 'flex', gap: '0.5rem', width: '100%', marginTop: '0.25rem' }}>
-            {editOrderId && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%', marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
               <button
                 className="btn btn-outline"
-                style={{ flex: 1, padding: '0.875rem', borderRadius: '10px' }}
-                onClick={handleCancelEdit}
+                style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem' }}
+                onClick={handleClearOrder}
+                disabled={cart.length === 0}
               >
-                Cancel
+                Clear Order
               </button>
-            )}
-            <button
-              className="btn btn-primary checkout-btn"
-              style={editOrderId ? { flex: 2, marginTop: 0 } : {}}
-              disabled={cart.length === 0 || isSubmitting}
-              onClick={handlePlaceOrder}
-            >
-              {isSubmitting ? 'Saving...' : (editOrderId ? 'Update Order' : 'Place Order')}
-            </button>
+              <button
+                className="btn btn-outline"
+                style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                onClick={handleHoldOrder}
+                disabled={cart.length === 0}
+              >
+                Hold Order
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+              {editOrderId && (
+                <button
+                  className="btn btn-outline"
+                  style={{ flex: 1, padding: '0.875rem', borderRadius: '10px' }}
+                  onClick={handleCancelEdit}
+                >
+                  Cancel Edit
+                </button>
+              )}
+              <button
+                className="btn btn-primary checkout-btn"
+                style={editOrderId ? { flex: 2, marginTop: 0 } : {}}
+                disabled={cart.length === 0 || isSubmitting}
+                onClick={handlePlaceOrder}
+              >
+                {isSubmitting ? 'Saving...' : (editOrderId ? 'Update Order' : 'Place Order / Checkout')}
+              </button>
+            </div>
           </div>
         </div>
       </div>
